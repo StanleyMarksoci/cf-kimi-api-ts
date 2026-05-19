@@ -13,11 +13,6 @@
   <img src="https://img.shields.io/badge/License-MIT-green" alt="MIT License">
 </p>
 
-<p align="center">
-  <a href="https://pi.ai"><img src="https://img.shields.io/badge/π_pi-7C3AED?style=flat-square" alt="pi"></a>
-  <a href="https://chat.deepseek.com/"><img src="https://img.shields.io/badge/DeepSeek_V4-4F46E5?style=flat-square" alt="DeepSeek V4"></a>
-</p>
-
 ---
 
 ## 📸 管理面板
@@ -29,7 +24,7 @@
 ## ✨ 功能
 
 - **OpenAI 兼容接口** — `GET /v1/models`、`POST /v1/chat/completions`、`POST /v1/completions`、`POST /v1/responses`
-- **流式与非流式输出** — SSE streaming 与完整非流式响应
+- **流式与非流式** — SSE streaming 与完整非流式响应
 - **Kimi 账号池** — 多账号健康调度、Token 自动刷新、并发控制、冷却策略
 - **API Key 管理** — 创建、删除、请求计数
 - **请求日志** — 筛选、详情、错误追踪
@@ -40,57 +35,46 @@
 
 ## 🚀 部署
 
-### 第一步：Fork 仓库
+### 方式一：Git 集成部署（无需 CLI）
 
-点击右上角 **Fork** 按钮，将本仓库 fork 到你的 GitHub 账号下。
+适合不想操作命令行的用户，全在 Cloudflare 网页上完成。
 
----
+**① Fork 本仓库** → 点击右上角 **Fork**。
 
-### 方式一：Fork → Git 集成部署（无需 CLI）
+**② 创建应用并连接 GitHub**
 
-Cloudflare Workers 支持直接连接 GitHub 仓库，fork 后在网页上完成全部配置。
-
-#### 1. Fork 本仓库
-
-点击页面右上角 **Fork**，将仓库 fork 到你的 GitHub 账号。
-
-#### 2. 创建应用程序并连接 GitHub
-
-Cloudflare Dashboard → **Workers & Pages** → **创建应用程序** → **连接 GitHub 仓库** → 授权 GitHub。
-
-选择你 fork 的仓库 `cf-kimi-api-ts` → **开始设置**。
+Cloudflare Dashboard → **Workers & Pages** → **创建应用程序** → **连接 GitHub 仓库** → 授权 GitHub → 选择你 fork 的 `cf-kimi-api-ts`。
 
 | 字段 | 填写 |
 |------|------|
-| **项目名称** | `cf-kimi-api-ts` |
-| **生产分支** | `main` |
-| **框架预设** | 选择 **None** 或留空（项目使用 wrangler.toml） |
-| **构建命令** | 留空（项目无需额外构建） |
-| **部署命令** | 留空（项目自带 `wrangler.toml`） |
-| **环境变量（可选）** | 先跳过，部署后再添加 |
+| 项目名称 | `cf-kimi-api-ts` |
+| 生产分支 | `main` |
+| 框架预设 | 留空 |
+| 构建命令 | 留空 |
+| 部署命令 | 留空 |
 
-点击 **保存并部署**。Cloudflare 会自动从仓库拉取代码并部署 Worker。
+→ **保存并部署**。
 
-#### 3. 创建 KV 命名空间
+**③ 创建 KV**
 
-Cloudflare Dashboard → **Workers & Pages** → **KV** → 创建命名空间，名称随意（如 `CF_KIMIA_API`）。
+Dashboard → **Workers & Pages** → **KV** → 创建命名空间（名称随意，如 `CF_KIMI_API`）。
 
-#### 4. 创建 D1 数据库
+**④ 创建 D1**
 
-Cloudflare Dashboard → **Workers & Pages** → **D1** → 创建数据库，名称 `cf-kimi-api-logs`。
+Dashboard → **Workers & Pages** → **D1** → 创建数据库，名称 `cf-kimi-api-logs`。
 
-#### 5. 绑定 KV 和 D1
+**⑤ 绑定 KV + D1**
 
-进入 Worker `cf-kimi-api-ts` → **设置 → 绑定** → 添加绑定：
+Worker `cf-kimi-api-ts` → **设置 → 绑定** → 添加：
 
 | 变量名 | 绑定类型 | 选择资源 |
 |--------|----------|----------|
-| `KV` | KV Namespace | 第 3 步创建的 KV |
-| `DB` | D1 Database | 第 4 步创建的 D1 |
+| `KV` | KV Namespace | 上一步创建的 KV |
+| `DB` | D1 Database | 上一步创建的 D1 |
 
-#### 6. 添加环境变量
+**⑥ 添加环境变量**
 
-Worker `cf-kimi-api-ts` → **设置 → 变量** → 添加环境变量：
+Worker `cf-kimi-api-ts` → **设置 → 变量** → 添加：
 
 | 变量名 | 值 |
 |--------|-----|
@@ -100,112 +84,55 @@ Worker `cf-kimi-api-ts` → **设置 → 变量** → 添加环境变量：
 | `TIMEZONE` | `Asia/Shanghai` |
 | `REQUEST_LOG_RETENTION` | `1000` |
 
-> 添加变量后 Cloudflare 会自动触发重新部署。
+> 添加变量后 Cloudflare 自动重新部署。
 
-#### 7. 首次使用
+**⑦ 访问**
 
-访问 `https://cf-kimi-api-ts.你的子域名.workers.dev/admin` → 用 `ADMIN_PASSWORD` 登录 → 添加 Kimi Token → 创建 API Key → 开始调用。
+`https://cf-kimi-api-ts.你的子域名.workers.dev/admin` → 用 `ADMIN_PASSWORD` 登录 → 添加 Kimi Token → 创建 API Key → 开始调用。
 
-之后每次向 `main` 分支推送代码，Cloudflare 会自动重新部署。
+> 之后每次向 `main` 推送代码，Cloudflare 自动重新部署。
 
 ---
 
-### 方式二：Fork → 本地 Clone → Wrangler CLI 部署
+### 方式二：Wrangler CLI 部署
 
-适合开发者，用命令行完成全部操作。
-
-#### 1. Fork & Clone
+适合开发者，命令行完成全部操作。
 
 ```bash
+# Fork → Clone
 git clone https://github.com/你的用户名/cf-kimi-api-ts.git
 cd cf-kimi-api-ts
 npm install
-```
 
-#### 2. 登录 Cloudflare
-
-```bash
+# 登录 Cloudflare
 npx wrangler login
-```
 
-#### 3. 创建 KV 命名空间
-
-```bash
+# 创建 KV 和 D1（记下返回的 ID）
 npx wrangler kv namespace create "CF_KIMI_API"
-```
-
-记下返回的 `id`。
-
-#### 4. 创建 D1 数据库
-
-```bash
 npx wrangler d1 create cf-kimi-api-logs
-```
 
-记下返回的 `database_id`。
-
-#### 5. 配置 wrangler.toml
-
-编辑 `wrangler.toml`，将 KV 和 D1 的 ID 替换为上两步记下的值：
-
-```toml
-[[kv_namespaces]]
-binding = "KV"
-id = "你的KV_ID"
-
-[[d1_databases]]
-binding = "DB"
-database_name = "cf-kimi-api-logs"
-database_id = "你的D1_ID"
-```
-
-#### 6. 设置 Secrets
-
-```bash
+# 编辑 wrangler.toml，填入上面的 ID
+# 设置 Secrets
 echo "你的管理密码" | npx wrangler secret put ADMIN_PASSWORD
 openssl rand -base64 32 | npx wrangler secret put SESSION_SECRET
-```
 
-#### 7. 部署
-
-```bash
+# 部署
 npm run deploy
 ```
 
-#### 8. 绑定自定义域名（可选）
+**可选：绑定自定义域名**
 
-如果你有域名托管在 Cloudflare，可以绑定到 Worker 绕过代理限制：
+有域名托管在 Cloudflare 的话，可以绑定绕过代理限制：
 
 ```bash
 npx wrangler triggers deploy --name "cf-kimi-api-ts" --route "你的域名/*"
 ```
 
-然后在 Cloudflare Dashboard 为你的域名添加 DNS A 记录（开启代理，橙云）指向 `192.0.2.1`。
+然后在 Cloudflare Dashboard 添加 DNS A 记录（开启代理/橙云）指向 `192.0.2.1`。
 
-#### 9. 首次使用
+**首次使用**
 
-访问 `https://你的域名/admin` 或 `https://cf-kimi-api-ts.你的子域名.workers.dev/admin` → 用 `ADMIN_PASSWORD` 登录 → 添加 Kimi Token → 创建 API Key → 开始调用。
-
----
-
-## 💻 本地开发（可选）
-
-```bash
-git clone https://github.com/Aleeyoo/cf-kimi-api-ts.git
-cd cf-kimi-api-ts
-npm install
-
-# 编辑 wrangler.toml 填入 KV/D1 ID（参考 wrangler.toml.example）
-# 设置环境变量
-npx wrangler secret put ADMIN_PASSWORD
-npx wrangler secret put SESSION_SECRET
-
-# 本地预览
-npm run dev
-
-# 部署
-npm run deploy
-```
+访问 `https://你的域名/admin` → 用 `ADMIN_PASSWORD` 登录 → 添加 Kimi Token → 创建 API Key → 开始调用。
 
 ---
 
@@ -216,19 +143,19 @@ npm run deploy
 | 方法 | 路径 | 说明 |
 |------|------|------|
 | `GET` | `/healthz` | 健康检查 |
-| `GET` | `/admin` | 管理面板 |
+| `GET` | `/admin` | 管理面板 SPA |
 
 ### OpenAI 兼容接口
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
 | `GET` | `/v1/models` | 模型列表 |
-| `GET` | `/v1/models/{model_id}` | 模型详情 |
+| `GET` | `/v1/models/{id}` | 模型详情 |
 | `POST` | `/v1/chat/completions` | Chat Completions |
 | `POST` | `/v1/completions` | Legacy Completions |
 | `POST` | `/v1/responses` | Responses API |
 
-所有 `/v1/*` 接口要求携带 API Key：`Authorization: Bearer <你的_API_Key>`。
+所有 `/v1/*` 接口需携带 API Key：`Authorization: Bearer <你的_API_Key>`。
 
 ### 管理面板
 
@@ -236,48 +163,46 @@ npm run deploy
 |------|------|
 | **概览** | 运行状态、Token 健康、账号统计、Key 数量、24h 请求趋势 |
 | **账号** | Kimi 账号池管理：添加/删除、Token 类型检测、状态监控 |
-| **Keys** | 对外 API Key 管理：创建、复制、删除、调用次数统计 |
-| **日志** | 请求日志列表：按状态筛选、分页、查看详情 |
+| **Keys** | API Key 管理：创建、复制、删除、调用次数统计 |
+| **日志** | 请求日志：按状态筛选、分页、查看详情 |
 
 ---
 
 ## ⚙️ 配置
 
-### 存储绑定（Cloudflare Dashboard 中创建）
+### 存储绑定
 
-| 绑定 | 用途 | 创建位置 |
-|------|------|----------|
-| **KV 命名空间** | 存储账号、Key、Token 缓存等所有持久数据 | Workers & Pages → KV |
-| **D1 数据库** | 存储请求日志 | Workers & Pages → D1 → 创建数据库 |
+| 绑定 | 类型 | 用途 |
+|------|------|------|
+| `KV` | KV Namespace | 存储账号、Key、Token 缓存等持久数据 |
+| `DB` | D1 Database | 存储请求日志 |
 
-> 部署后需在 Cloudflare Dashboard → 你的 Worker → 设置 → 绑定 中添加 KV 和 D1 的绑定。
+> Dashboard → Worker → **设置 → 绑定** 中添加。
 
 ### 环境变量
 
-| 变量 | 部署必填 | 默认值 | 说明 | 获取方式 |
-|------|----------|--------|------|----------|
-| `ADMIN_PASSWORD` | **✅ 是** | — | 管理面板登录密码 | 自己设一个强密码 |
-| `SESSION_SECRET` | **✅ 是** | — | JWT 签名密钥，用于加密管理面板登录 session | 运行 `openssl rand -base64 32` 生成随机字符串 |
-| `KIMI_API_BASE` | 否 | `https://www.kimi.com` | Kimi Web 服务地址 | 不需要改 |
-| `TIMEZONE` | 否 | `Asia/Shanghai` | 面板时间显示时区 | 按需设为 `Asia/Shanghai`、`America/New_York` 等 |
-| `REQUEST_LOG_RETENTION` | 否 | `1000` | 最大保留请求日志条数，超出后自动清除旧日志 | 调大调小都行 |
-| `DEFAULT_MODEL` | 否 | 空 | 请求未指定 model 时使用的默认模型名 | 例如 `kimi-k2.6` |
+| 变量 | 必填 | 默认值 | 说明 |
+|------|------|--------|------|
+| `ADMIN_PASSWORD` | ✅ | — | 管理面板登录密码 |
+| `SESSION_SECRET` | ✅ | — | JWT 签名密钥，`openssl rand -base64 32` 生成 |
+| `KIMI_API_BASE` | | `https://www.kimi.com` | Kimi Web 服务地址 |
+| `TIMEZONE` | | `Asia/Shanghai` | 面板时间显示时区 |
+| `REQUEST_LOG_RETENTION` | | `1000` | 最大保留日志条数 |
+| `DEFAULT_MODEL` | | 空 | 默认模型名（如 `kimi-k2.6`） |
 
-### 可选预设（部署后可改）
+### 可选预设
 
-以下变量非必填，部署后可通过管理面板配置，效果相同：
+| 变量 | 说明 |
+|------|------|
+| `KIMI_TOKEN` | 预设 Kimi Token，免去首次手动添加 |
 
-| 变量 | 默认值 | 说明 |
-|------|--------|------|
-| `KIMI_TOKEN` | 空 | 预设 Kimi Token（refresh_token 或 JWT access_token），免去首次登录面板手动添加 |
-
-> ⚠️ 已从文档移除的字段：`SECURE_COOKIES`、`KIMI_ACCEPT_LANGUAGE`、`KIMI_MAX_CONCURRENCY`、`KIMI_MIN_REQUEST_INTERVAL`、`TIMEOUT`、`OPENAI_API_KEY`、`MODEL` — 这些变量在代码中未使用，旧的 README 记录有误。
+> 以下变量**已不再使用**，无需设置：`SECURE_COOKIES`、`KIMI_ACCEPT_LANGUAGE`、`KIMI_MAX_CONCURRENCY`、`KIMI_MIN_REQUEST_INTERVAL`、`TIMEOUT`、`OPENAI_API_KEY`、`MODEL`。
 
 ---
 
 ## 🏗️ 项目结构
 
-```text
+```
 src/
 ├── index.ts               # Hono 应用入口
 ├── config.ts              # 环境变量配置
@@ -320,10 +245,9 @@ static/
 
 ## 🔒 安全
 
-- 生产环境请设置强 `ADMIN_PASSWORD` 和稳定的 `SESSION_SECRET`
-- 公开部署时保持 `SECURE_COOKIES=true`
+- 设置强 `ADMIN_PASSWORD`，不要与其他服务共用
 - 不要把真实 Token、API Key 提交到仓库
-- 本地配置覆盖请用 `wrangler.toml.local`（已加入 `.gitignore`），真实 ID 不会误提交
+- 本地配置覆盖用 `wrangler.toml.local`（已 `.gitignore`），避免误提交真实 ID
 
 ---
 
@@ -331,19 +255,13 @@ static/
 
 详见 [CHANGELOG.md](./CHANGELOG.md)
 
----
-
 ## 🤝 贡献
 
 欢迎贡献！请阅读 [CONTRIBUTING.md](./CONTRIBUTING.md)
 
----
-
 ## 🙏 致谢
 
 感谢原项目 [XxxXTeam/kimi2api](https://github.com/XxxXTeam/kimi2api) 的基础实现和思路。
-
----
 
 ## 📄 许可证
 
