@@ -46,84 +46,130 @@
 
 ---
 
-### 方式一：一键部署（推荐，无需代码）
+### 方式一：Fork → Cloudflare Workers Dashboard 部署
 
-[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Aleeyoo/cf-kimi-api-ts)
+适合不想操作命令行的用户，直接在 Cloudflare 网页控制台完成。
 
-**操作步骤：**
+#### 1. Fork 本仓库
 
-1. **Fork 本仓库**（已完成）
-2. 点击上方按钮 → 登录 Cloudflare → **选择你 fork 的仓库**
-3. 在部署配置页面，创建或选择以下资源：
+点击页面右上角 **Fork**，将仓库 fork 到你的 GitHub 账号。
 
-| 字段 | 说明 |
-|------|------|
-| **KV 命名空间** | 新建一个（如 `cf-kimi-api-kv`）或选已有的 |
-| **D1 数据库** | 新建一个 `cf-kimi-api-logs` 或选已有的 |
-| `ADMIN_PASSWORD` | 设置管理面板密码 |
-| `SESSION_SECRET` | 运行 `openssl rand -base64 32` 生成填入 |
+#### 2. 创建 Worker
 
-> 其他字段（`KIMI_TOKEN`、`OPENAI_API_KEY`、`SECURE_COOKIES` 等）与本项目无关，**留空即可**。
+Cloudflare Dashboard → **Workers & Pages** → **创建应用程序** → **Worker** → 名称填 `cf-kimi-api-ts` → **部署**。
 
-4. 部署完成后，在 Cloudflare Dashboard → Worker `cf-kimi-api-ts` → **设置 → 绑定**，确认 KV 和 D1 已绑定。
+#### 3. 上传代码
 
----
+进入 Worker → **编辑代码** → 将 `src/` 目录下的所有 `.ts` 文件内容合并粘贴到编辑器（或使用下方方式二通过 wrangler CLI 上传）。
 
-### 方式二：GitHub Actions 自动化部署
+#### 4. 创建 KV 命名空间
 
-配置好后，每次推送代码到 `main` 分支都会自动部署。
+Cloudflare Dashboard → **Workers & Pages** → **KV** → 创建命名空间，名称随意（如 `CF_KIMI_API`）。
 
-#### 1. 在 Cloudflare 准备资源
+#### 5. 创建 D1 数据库
 
-| 资源 | 用途 | 创建位置 |
-|------|------|----------|
-| **KV Namespace** | 存储账号、Key、配置 | Workers & Pages → KV → 创建 |
-| **D1 Database** | 存储请求日志 | Workers & Pages → D1 → 创建 |
-| **API Token** | 授权部署 | [API Tokens](https://dash.cloudflare.com/profile/api-tokens) → 创建令牌 → Workers Edit 模板 |
+Cloudflare Dashboard → **Workers & Pages** → **D1** → 创建数据库，名称 `cf-kimi-api-logs`。
 
-#### 2. 配置 GitHub Secrets
+#### 6. 绑定 KV 和 D1
 
-在你 fork 的仓库 → **Settings → Secrets and variables → Actions** 中添加：
-
-| Secret | 说明 | 获取方式 |
-|--------|------|----------|
-| `CLOUDFLARE_API_TOKEN` | Cloudflare API 令牌 | 上一步创建的 |
-| `ADMIN_PASSWORD` | 管理面板密码 | 自己设 |
-| `SESSION_SECRET` | session 签名密钥 | `openssl rand -base64 32` |
-
-#### 3. 推送代码（触发自动部署）
-
-```bash
-git push origin main
-```
-
-Actions 自动部署，进度查看：你 fork 的仓库 → Actions 页面。
-
----
-
-### 部署后配置
-
-#### 绑定 KV 和 D1
-
-一键部署会自动绑定，如需手动确认：Cloudflare Dashboard → 你的 Worker → **设置 → 绑定**
+进入 Worker `cf-kimi-api-ts` → **设置 → 绑定** → 添加绑定：
 
 | 变量名 | 绑定类型 | 选择 |
 |--------|----------|------|
-| `KV` | KV Namespace | 你创建的 KV |
-| `DB` | D1 Database | 你创建的 D1 |
+| `KV` | KV Namespace | 上一步创建的 KV |
+| `DB` | D1 Database | 上一步创建的 D1 |
 
-#### 绑定自定义域名（可选）
+#### 7. 添加环境变量
 
-如果你有域名托管在 Cloudflare，可以绑定到 Worker 上绕过代理限制：
+Worker `cf-kimi-api-ts` → **设置 → 变量** → 添加环境变量：
+
+| 变量名 | 值 |
+|--------|-----|
+| `ADMIN_PASSWORD` | 你的管理密码 |
+| `SESSION_SECRET` | `openssl rand -base64 32` 生成 |
+| `KIMI_API_BASE` | `https://www.kimi.com` |
+| `TIMEZONE` | `Asia/Shanghai` |
+| `REQUEST_LOG_RETENTION` | `1000` |
+
+#### 8. 首次使用
+
+访问 `https://cf-kimi-api-ts.你的子域名.workers.dev/admin` → 用 `ADMIN_PASSWORD` 登录 → 添加 Kimi Token → 创建 API Key → 开始调用。
+
+---
+
+### 方式二：Fork → 本地 Clone → Wrangler CLI 部署
+
+适合开发者，用命令行完成全部操作。
+
+#### 1. Fork & Clone
 
 ```bash
-# 安装依赖后执行
+git clone https://github.com/你的用户名/cf-kimi-api-ts.git
+cd cf-kimi-api-ts
+npm install
+```
+
+#### 2. 登录 Cloudflare
+
+```bash
+npx wrangler login
+```
+
+#### 3. 创建 KV 命名空间
+
+```bash
+npx wrangler kv namespace create "CF_KIMI_API"
+```
+
+记下返回的 `id`。
+
+#### 4. 创建 D1 数据库
+
+```bash
+npx wrangler d1 create cf-kimi-api-logs
+```
+
+记下返回的 `database_id`。
+
+#### 5. 配置 wrangler.toml
+
+编辑 `wrangler.toml`，将 KV 和 D1 的 ID 替换为上两步记下的值：
+
+```toml
+[[kv_namespaces]]
+binding = "KV"
+id = "你的KV_ID"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "cf-kimi-api-logs"
+database_id = "你的D1_ID"
+```
+
+#### 6. 设置 Secrets
+
+```bash
+echo "你的管理密码" | npx wrangler secret put ADMIN_PASSWORD
+openssl rand -base64 32 | npx wrangler secret put SESSION_SECRET
+```
+
+#### 7. 部署
+
+```bash
+npm run deploy
+```
+
+#### 8. 绑定自定义域名（可选）
+
+如果你有域名托管在 Cloudflare，可以绑定到 Worker 绕过代理限制：
+
+```bash
 npx wrangler triggers deploy --name "cf-kimi-api-ts" --route "你的域名/*"
 ```
 
-然后在 Cloudflare Dashboard 添加 DNS A 记录（代理模式，橙云）指向 `192.0.2.1`。
+然后在 Cloudflare Dashboard 为你的域名添加 DNS A 记录（开启代理，橙云）指向 `192.0.2.1`。
 
-#### 首次使用
+#### 9. 首次使用
 
 访问 `https://你的域名/admin` 或 `https://cf-kimi-api-ts.你的子域名.workers.dev/admin` → 用 `ADMIN_PASSWORD` 登录 → 添加 Kimi Token → 创建 API Key → 开始调用。
 

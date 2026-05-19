@@ -1,8 +1,6 @@
 # wrangler.toml
-# Fork the repo first, then use one-click deploy:
-#   https://deploy.workers.cloudflare.com/?url=https://github.com/你的用户名/cf-kimi-api-ts
-#
-# For local development, copy IDs from Cloudflare Dashboard.
+# 将 KV 和 D1 的 ID 替换为你在 Cloudflare Dashboard 中创建的实际 ID。
+# 详见 README.md 部署说明。
 
 name = "cf-kimi-api-ts"
 main = "src/index.ts"
