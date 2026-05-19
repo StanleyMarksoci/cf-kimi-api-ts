@@ -1,7 +1,6 @@
 # wrangler.toml.example
-# CLI 部署（方式二）复制为 wrangler.toml，填入真实 ID。
-# Git 集成部署（方式一）无需此文件，绑定在 Dashboard 上配。
-# 所有变量均有代码默认值，无需在 vars 中声明。
+# CLI 部署（方式二）复制为 wrangler.toml，填入下方 ID。
+# Git 集成部署（方式一）如需持久绑定，在 fork 中将下方内容追加到 wrangler.toml。
 
 name = "cf-kimi-api-ts"
 main = "src/index.ts"
