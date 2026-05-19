@@ -110,12 +110,10 @@ npx wrangler secret put ADMIN_PASSWORD
 
 # Cookie 签名密钥（推荐）
 npx wrangler secret put SESSION_SECRET
+# 运行 `openssl rand -base64 32` 生成一个随机值
 
-# 可选：预设 Kimi Token
+# 可选：预设 Kimi Token（也可部署后在管理面板添加）
 npx wrangler secret put KIMI_TOKEN
-
-# 可选：预设对外 API Key
-npx wrangler secret put OPENAI_API_KEY
 ```
 
 ### 6. 本地预览
@@ -210,21 +208,35 @@ git push origin main
 
 ## ⚙️ 配置
 
-| 变量 | 必填 | 默认值 | 说明 |
-|------|------|--------|------|
-| `ADMIN_PASSWORD` | **是** | — | 管理面板密码 |
-| `SESSION_SECRET` | 推荐 | 自动生成 | Cookie 签名密钥 |
-| `KIMI_TOKEN` | 否 | — | 初始 Kimi token（refresh_token 或 JWT access_token） |
-| `KIMI_API_BASE` | 否 | `https://www.kimi.com` | Kimi Web 服务地址 |
-| `KIMI_ACCEPT_LANGUAGE` | 否 | `zh-CN,zh;q=0.9` | Kimi 请求语言偏好 |
-| `KIMI_MAX_CONCURRENCY` | 否 | `2` | 新账号默认并发上限 |
-| `KIMI_MIN_REQUEST_INTERVAL` | 否 | `0.5` | 新账号最小请求间隔（秒） |
-| `TIMEOUT` | 否 | `120` | 上游请求超时（秒） |
-| `MODEL` | 否 | — | 默认模型 |
-| `OPENAI_API_KEY` | 否 | — | 本服务对外 API Key |
-| `SECURE_COOKIES` | 否 | `true` | Cookie Secure 标记；本地调试设为 `false` |
-| `TIMEZONE` | 否 | `Asia/Shanghai` | 面板时间时区 |
-| `REQUEST_LOG_RETENTION` | 否 | `1000` | 日志保留条数 |
+### 存储绑定（Cloudflare Dashboard 中创建）
+
+| 绑定 | 用途 | 创建位置 |
+|------|------|----------|
+| **KV 命名空间** | 存储账号、Key、Token 缓存等所有持久数据 | Workers & Pages → KV |
+| **D1 数据库** | 存储请求日志 | Workers & Pages → D1 → 创建数据库 |
+
+> 一键部署时会弹出下拉菜单让你选择或创建。本地手动部署需在 `wrangler.toml` 中填入 ID。
+
+### 环境变量
+
+| 变量 | 部署必填 | 默认值 | 说明 | 获取方式 |
+|------|----------|--------|------|----------|
+| `ADMIN_PASSWORD` | **✅ 是** | — | 管理面板登录密码 | 自己设一个强密码 |
+| `SESSION_SECRET` | **✅ 是** | — | JWT 签名密钥，用于加密管理面板登录 session | 运行 `openssl rand -base64 32` 生成随机字符串 |
+| `KIMI_API_BASE` | 否 | `https://www.kimi.com` | Kimi Web 服务地址 | 不需要改 |
+| `TIMEZONE` | 否 | `Asia/Shanghai` | 面板时间显示时区 | 按需设为 `Asia/Shanghai`、`America/New_York` 等 |
+| `REQUEST_LOG_RETENTION` | 否 | `1000` | 最大保留请求日志条数，超出后自动清除旧日志 | 调大调小都行 |
+| `DEFAULT_MODEL` | 否 | 空 | 请求未指定 model 时使用的默认模型名 | 例如 `kimi-k2.6` |
+
+### 可选预设（部署后可改）
+
+以下变量非必填，部署后可通过管理面板配置，效果相同：
+
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `KIMI_TOKEN` | 空 | 预设 Kimi Token（refresh_token 或 JWT access_token），免去首次登录面板手动添加 |
+
+> ⚠️ 已从文档移除的字段：`SECURE_COOKIES`、`KIMI_ACCEPT_LANGUAGE`、`KIMI_MAX_CONCURRENCY`、`KIMI_MIN_REQUEST_INTERVAL`、`TIMEOUT`、`OPENAI_API_KEY`、`MODEL` — 这些变量在代码中未使用，旧的 README 记录有误。
 
 ---
 

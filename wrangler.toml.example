@@ -26,5 +26,6 @@ database_id = "YOUR_D1_DATABASE_ID"
 
 [vars]
 KIMI_API_BASE = "https://www.kimi.com"
+DEFAULT_MODEL = ""
 TIMEZONE = "Asia/Shanghai"
 REQUEST_LOG_RETENTION = "1000"
