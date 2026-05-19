@@ -1,5 +1,6 @@
 # wrangler.toml.example
-# Copy this to wrangler.toml and fill in your actual IDs for local development.
+# 本地 CLI 部署时复制为 wrangler.toml，填入实际 ID。
+# Git 集成部署时绑定在 Cloudflare Dashboard 中配置，此文件无需填 ID。
 
 name = "cf-kimi-api-ts"
 main = "src/index.ts"
@@ -12,13 +13,11 @@ not_found_handling = "none"
 
 [[kv_namespaces]]
 binding = "KV"
-# Replace with your KV namespace ID from Cloudflare Dashboard
 id = "YOUR_KV_NAMESPACE_ID"
 
 [[d1_databases]]
 binding = "DB"
 database_name = "cf-kimi-api-logs"
-# Replace with your D1 database ID from Cloudflare Dashboard
 database_id = "YOUR_D1_DATABASE_ID"
 
 [vars]

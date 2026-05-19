@@ -1,6 +1,6 @@
 # wrangler.toml
-# 将 KV 和 D1 的 ID 替换为你在 Cloudflare Dashboard 中创建的实际 ID。
-# 详见 README.md 部署说明。
+# Git 集成部署：绑定（KV/D1）在 Cloudflare Dashboard 中配置，此处不写 ID。
+# 本地 CLI 部署：复制 wrangler.toml.example 并按需填入 ID。
 
 name = "cf-kimi-api-ts"
 main = "src/index.ts"
@@ -10,17 +10,6 @@ compatibility_flags = ["nodejs_compat"]
 [assets]
 directory = "static"
 not_found_handling = "none"
-
-[[kv_namespaces]]
-binding = "KV"
-# 替换为你的 KV Namespace ID
-id = "YOUR_KV_NAMESPACE_ID"
-
-[[d1_databases]]
-binding = "DB"
-database_name = "cf-kimi-api-logs"
-# 替换为你的 D1 Database ID
-database_id = "YOUR_D1_DATABASE_ID"
 
 [vars]
 KIMI_API_BASE = "https://www.kimi.com"
