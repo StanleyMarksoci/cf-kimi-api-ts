@@ -7,8 +7,9 @@ compatibility_flags = ["nodejs_compat"]
 directory = "static"
 not_found_handling = "none"
 
-# ⚠️ 部署前必读：先创建 KV + D1，将下方两个 ID 替换为真实 ID。
-#    否则部署会失败。详见 README → 部署 → 方式一。
+# KV + D1 绑定
+# 在首次部署前，先创建 KV 和 D1，将下方两个 ID 替换为真实 ID。
+# 否则 Git 集成重新部署时会覆盖 Dashboard 上已绑定的配置。
 [[kv_namespaces]]
 binding = "KV"
 id = "YOUR_KV_NAMESPACE_ID"

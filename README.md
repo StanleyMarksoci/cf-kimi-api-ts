@@ -37,7 +37,9 @@
 
 ### 方式一：Git 集成部署（无需 CLI）
 
-> ⚠️ **关键一步**：先创建 KV + D1，把真实 ID 写入 fork 里的 `wrangler.toml`，再创建 Worker。否则部署会因 ID 无效而失败。
+> ⚠️ **关于 KV/D1 绑定**：你也可以先部署 Worker，再到 Dashboard 上绑定 KV + D1（跳过下方第 ③ 步）。但 Cloudflare Git 集成的每次重新部署都会**覆盖 Dashboard 上的绑定配置**，已绑定的 KV/D1 会丢失。
+>
+> **建议**：按下面的步骤，在首次部署前就把真实 ID 填入 fork 中的 `wrangler.toml`，这样绑定随代码一起部署，后续重新构建也不会丢失。
 
 **① Fork 仓库**
 
