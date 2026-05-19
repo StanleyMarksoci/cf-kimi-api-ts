@@ -190,6 +190,7 @@ router.get("/admin/api/stats", async (c) => {
         raw_stream_body TEXT NOT NULL DEFAULT '',
         created_at TEXT DEFAULT (datetime('now'))
       )`).run().catch(()=>{});
+    }
 
     // 从日志最早一条记录计算运行时间
     const firstLog = await searchLogs(c.env.DB, { limit: 1, offset: 0 }).catch(() => ({ logs: [], total: 0 }));
