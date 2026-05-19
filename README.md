@@ -114,9 +114,19 @@ Worker `cf-kimi-api-ts` → **设置 → 变量** → 添加：
 | `REQUEST_LOG_RETENTION` | `1000` | 最大保留日志条数 |
 | `DEFAULT_MODEL` | 空 | 默认模型名，如 `kimi-k2.6` |
 
-**⑤ 访问**
+**⑤ 开始使用**
 
-`https://cf-kimi-api-ts.你的子域名.workers.dev/admin` → 用 `ADMIN_PASSWORD` 登录 → 添加 Kimi Token → 创建 API Key → 开始调用。
+1. 打开 `https://cf-kimi-api-ts.你的子域名.workers.dev/admin`，输入密码登录
+2. 在 **账号** 页面添加你的 Kimi Token（refresh_token 或 JWT）
+3. 在 **Keys** 页面创建一个 API Key
+4. 用任意 OpenAI SDK 调用：
+
+```bash
+curl https://cf-kimi-api-ts.你的子域名.workers.dev/v1/chat/completions \
+  -H "Authorization: Bearer 你的API_Key" \
+  -H "Content-Type: application/json" \
+  -d '{"model": "kimi-k2.6", "messages": [{"role": "user", "content": "你好"}]}'
+```
 
 ---
 
@@ -159,51 +169,7 @@ npx wrangler triggers deploy --name "cf-kimi-api-ts" --route "你的域名/*"
 
 然后在 Cloudflare Dashboard 添加 DNS A 记录（开启代理/橙云）指向 `192.0.2.1`。
 
-**首次使用**
-
-访问 `https://你的域名/admin` → 用 `ADMIN_PASSWORD` 登录 → 添加 Kimi Token → 创建 API Key → 开始调用。
-
----
-
-### 方式二：Wrangler CLI 部署
-
-适合开发者，命令行完成全部操作。
-
-```bash
-# Fork → Clone
-git clone https://github.com/你的用户名/cf-kimi-api-ts.git
-cd cf-kimi-api-ts
-npm install
-
-# 登录 Cloudflare
-npx wrangler login
-
-# 创建 KV 和 D1（记下返回的 ID）
-npx wrangler kv namespace create "CF_KIMI_API"
-npx wrangler d1 create cf-kimi-api-logs
-
-# 编辑 wrangler.toml，填入上面的 ID
-# 设置 Secrets
-echo "你的管理密码" | npx wrangler secret put ADMIN_PASSWORD
-openssl rand -base64 32 | npx wrangler secret put SESSION_SECRET
-
-# 部署
-npm run deploy
-```
-
-**可选：绑定自定义域名**
-
-有域名托管在 Cloudflare 的话，可以绑定绕过代理限制：
-
-```bash
-npx wrangler triggers deploy --name "cf-kimi-api-ts" --route "你的域名/*"
-```
-
-然后在 Cloudflare Dashboard 添加 DNS A 记录（开启代理/橙云）指向 `192.0.2.1`。
-
-**首次使用**
-
-访问 `https://你的域名/admin` → 用 `ADMIN_PASSWORD` 登录 → 添加 Kimi Token → 创建 API Key → 开始调用。
+**首次使用** — 步骤同上方的 **⑤ 开始使用**。
 
 ---
 
