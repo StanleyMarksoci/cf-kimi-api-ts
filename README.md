@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <a href="https://deploy.workers.cloudflare.com/?url=https://github.com/chopper1026/cf-kimi-api-ts">
+  <a href="https://deploy.workers.cloudflare.com/?url=https://github.com/Aleeyoo/cf-kimi-api-ts">
     <img src="https://deploy.workers.cloudflare.com/button" alt="Deploy to Cloudflare Workers">
   </a>
 </p>
@@ -46,7 +46,7 @@
 
 ## 🚀 一键部署
 
-[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/chopper1026/cf-kimi-api-ts)
+[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Aleeyoo/cf-kimi-api-ts)
 
 点击上方按钮，按 Cloudflare 引导完成部署。部署后需在 Dashboard 中设置 `ADMIN_PASSWORD` 等环境变量。
 
