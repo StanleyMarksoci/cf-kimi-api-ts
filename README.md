@@ -48,11 +48,20 @@
 
 [![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Aleeyoo/cf-kimi-api-ts)
 
-点击上方按钮，按 Cloudflare 引导完成部署。部署后需在 Dashboard 中设置 `ADMIN_PASSWORD` 等环境变量。
+点击按钮，在 Cloudflare 引导页只需填写 **4 项**即可完成部署：
+
+| 字段 | 说明 |
+|------|------|
+| **KV 命名空间** | 选择或创建一个 KV Namespace |
+| **D1 数据库** | 选择或创建一个 D1 Database |
+| `ADMIN_PASSWORD` | 管理面板登录密码（自己设） |
+| `SESSION_SECRET` | 运行 `openssl rand -base64 32` 生成一个随机字符串 |
+
+> 其余参数（`KIMI_API_BASE`、`TIMEZONE`、日志保留等）均有合理默认值，部署后可在管理面板或 Cloudflare Dashboard 中按需调整。
 
 ---
 
-## 📦 手动部署
+## 📦 手动部署（可选）
 
 ### 前置条件
 
