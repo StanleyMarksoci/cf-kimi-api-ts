@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+.wrangler/
+*.tsbuildinfo
+
+# Wrangler config (use wrangler.toml.example as template)
+wrangler.toml
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# Local agent config
+.claude/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test coverage
+coverage/

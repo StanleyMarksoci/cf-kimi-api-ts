@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>worker-ai-proxy</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:oklch(96% .005 80);
+  --bg2:oklch(92% .006 80);
+  --text:oklch(20% .01 70);
+  --text2:oklch(46% .015 65);
+  --text3:oklch(60% .01 65);
+  --line:oklch(78% .008 70);
+  --dash:oklch(84% .006 65);
+  --acc:oklch(52% .12 60);
+  --accbg:oklch(52% .12 60 / .08);
+  --red:oklch(52% .18 30);
+  --redbg:oklch(52% .18 30 / .08);
+  --grn:oklch(52% .15 145);
+  --grnbg:oklch(52% .15 145 / .08);
+  --ylw:oklch(58% .14 85);
+  --ylwbg:oklch(58% .14 85 / .08);
+  transition:background .25s,color .25s;
+}
+:root.dk{
+  --bg:#181a1c;--bg2:#202226;--text:#e2e3e6;--text2:#97999f;--text3:#65686f;--line:#2c2e34;--dash:#26282e;--acc:#bf8f65;--accbg:#bf8f6512;--red:#e06969;--redbg:#e0696912;--grn:#5bb589;--grnbg:#5bb58912;--ylw:#c99b48;--ylwbg:#c99b4812;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;min-height:100vh}
+.hd{display:flex;align-items:center;justify-content:space-between;padding:18px 24px 14px;max-width:960px;margin:0 auto;border-bottom:2px solid var(--line)}
+.hd h1{font-size:15px;font-weight:500;color:var(--text);letter-spacing:-.02em}
+.hd-r{display:flex;align-items:center;gap:14px}
+.hd-r button{background:none;border:none;color:var(--text2);font-size:13px;cursor:pointer;padding:4px 10px;border-radius:6px;transition:background .12s}
+.hd-r button:hover{background:var(--bg2);color:var(--text)}
+.pg{max-width:960px;margin:0 auto;padding:0 24px 80px}
+.sec{padding:24px 0;border-top:2px solid var(--line)}
+.sec:first-of-type{border-top:none;padding-top:4px}
+.sec-hd{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px}
+.sec-hd h2{font-size:14px;font-weight:500;color:var(--text);letter-spacing:-.02em}
+.sec-hd .mt{font-size:12px;color:var(--text3)}
+.st{display:grid;grid-template-columns:repeat(6,1fr)}
+.st .c{padding:16px;text-align:center;border-right:1px dashed var(--dash)}
+.st .c:last-child{border-right:none}
+.st .c .v{font-size:24px;font-weight:550;color:var(--text);font-variant-numeric:tabular-nums}
+.st .c .l{font-size:10px;color:var(--text3);margin-top:2px;text-transform:uppercase;letter-spacing:.5px}
+.sb{display:grid;grid-template-columns:repeat(4,1fr)}
+.sb .c{padding:12px 16px;border-right:1px dashed var(--dash)}
+.sb .c:last-child{border-right:none}
+.sb .c .l{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px}
+.sb .c .v{font-size:17px;font-weight:500;color:var(--text);margin-top:1px;font-variant-numeric:tabular-nums}
+.rk{padding:0}
+.rk-i{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px dashed var(--dash)}
+.rk-i:last-child{border-bottom:none}
+.rk-i .n{width:20px;font-size:12px;color:var(--text3);text-align:right}
+.rk-i .t{flex:1;font-size:13px;font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rk-i .c{font-size:12px;color:var(--text2);min-width:36px;text-align:right}
+.rk-i .b{width:80px;height:5px;background:var(--bg2);border-radius:3px;overflow:hidden;flex-shrink:0}
+.rk-i .b-in{height:100%;background:var(--acc);border-radius:3px}
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{text-align:left;padding:7px 4px 7px 0;font-size:10px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+.tbl td{padding:9px 4px 9px 0;border-bottom:1px dashed var(--dash);font-size:13px;color:var(--text);vertical-align:middle;overflow:hidden;text-overflow:ellipsis}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr{cursor:pointer;transition:background .06s}
+.tbl tr:hover{background:var(--bg2)}
+.btn{display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;border:none;transition:all .1s}
+.btn-p{background:var(--acc);color:#fff}
+.btn-p:hover{filter:brightness(1.08)}
+.btn-s{background:var(--bg2);color:var(--text2);border:1px solid var(--line)}
+.btn-s:hover{background:var(--line);color:var(--text)}
+.btn-d{background:transparent;color:var(--red);border:1px solid var(--dash)}
+.btn-d:hover{background:var(--red);color:#fff;border-color:var(--red)}
+.btn:disabled{opacity:.35;cursor:default}
+.tg{display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.3px}
+.tg-g{background:var(--grnbg);color:var(--grn)}
+.tg-r{background:var(--redbg);color:var(--red)}
+.tg-y{background:var(--ylwbg);color:var(--ylw)}
+.tg-b{background:var(--accbg);color:var(--acc)}
+#tt{position:fixed;bottom:24px;right:24px;z-index:999;padding:10px 18px;border-radius:8px;font-size:13px;color:#fff;opacity:0;transform:translateY(8px);transition:opacity .2s,transform .2s;pointer-events:none}
+#tt.on{opacity:1;transform:translateY(0)}
+dialog{background:var(--bg);color:var(--text);border:2px solid var(--line);border-radius:10px;padding:0;width:380px;max-width:90vw}
+dialog::backdrop{background:rgba(0,0,0,.35)}
+.dh{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line);font-size:14px;font-weight:500}
+.dh button{background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:0 4px;line-height:1}
+.dh button:hover{color:var(--text)}
+.db{padding:18px}
+.db label{display:block;font-size:12px;color:var(--text2);margin-bottom:3px}
+.db input,.db textarea{width:100%;padding:8px 10px;margin-bottom:10px;background:var(--bg2);border:1px solid var(--line);border-radius:6px;color:var(--text);font-size:13px;font-family:inherit}
+.db input:focus,.db textarea:focus{outline:none;border-color:var(--acc)}
+.db textarea{font-family:monospace;min-height:50px;resize:vertical}
+.df{display:flex;gap:8px;justify-content:flex-end;padding:12px 18px;border-top:1px solid var(--line)}
+canvas{display:block;width:100%;height:80px;border-radius:4px;margin-bottom:0;min-height:80px}
+#li{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999}
+#li .bx{background:var(--bg2);border:2px solid var(--line);border-radius:12px;padding:32px;width:280px;text-align:center}
+#li .bx h1{font-size:16px;font-weight:500;color:var(--text);margin-bottom:18px;letter-spacing:-.02em}
+#li .bx input{width:100%;padding:9px 12px;margin-bottom:10px;background:var(--bg);border:1px solid var(--line);border-radius:7px;color:var(--text);font-size:14px;font-family:inherit}
+#li .bx input:focus{outline:none;border-color:var(--acc)}
+#li .bx button{width:100%;padding:9px;background:var(--acc);color:#fff;border:none;border-radius:7px;font-size:14px;cursor:pointer;font-weight:500}
+#li .bx .le{color:var(--red);font-size:13px;margin-top:8px;display:none}
+.mono{font-family:ui-monospace,SFMono-Regular,monospace;font-size:12px}
+.flex{display:flex;gap:8px;align-items:center}
+.mr{margin-right:6px}
+.sm{font-size:11px;color:var(--text3)}
+.emp{padding:20px 0;text-align:center;color:var(--text3);font-size:13px}
+.kb{background:var(--grnbg);border:1px solid var(--grn);border-radius:7px;padding:0;margin-bottom:12px;overflow:hidden}
+.kb-hd{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--grn)}
+.kb-hd span{font-size:11px;color:var(--text2)}
+.kb-hd button{background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:0 2px;line-height:1}
+.kb-hd button:hover{color:var(--text)}
+.kb-bd{padding:10px 14px}
+.kb-bd code{display:block;font-size:12px;user-select:all;background:rgba(0,0,0,.1);padding:6px 8px;border-radius:5px;word-break:break-all;margin-bottom:6px}
+.kb-bd button{font-size:11px}
+.pg-nav{display:flex;gap:6px;align-items:center;padding:10px 0 0;font-size:12px;color:var(--text3)}
+.pg-nav button{padding:3px 10px;background:var(--bg2);border:1px solid var(--dash);border-radius:5px;color:var(--text2);cursor:pointer;font-size:11px;transition:all .1s}
+.pg-nav button:hover{background:var(--line);color:var(--text)}
+.pg-nav button:disabled{opacity:.3;cursor:default}
+@media(max-width:660px){
+  .st{grid-template-columns:repeat(3,1fr)}
+  .sb{grid-template-columns:repeat(2,1fr)}
+  .pg{padding:0 14px 60px}
+  .hd{padding:14px}
+}
+</style>
+</head>
+<body>
+<div class="hd">
+  <h1>worker-ai-proxy</h1>
+  <div class="hd-r">
+    <button id="tb" onclick="tt()">○ 主题</button>
+    <button onclick="lo()" style="color:var(--red)">退出</button>
+  </div>
+</div>
+<div class="pg" id="pg"></div>
+<div id="tt"></div>
+<div id="li"><div class="bx"><h1>worker-ai-proxy</h1><input type="password" id="pw" placeholder="管理密码" onkeydown="if(event.key==='Enter')lg()"><button onclick="lg()">登录</button><div class="le" id="le"></div></div></div>
+
+<script>
+let cs='',nk='',dk=window.matchMedia('(prefers-color-scheme:dark)').matches,lp=1
+const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s)
+
+function tt(){dk=!dk;document.documentElement.classList.toggle('dk',dk);$('#tb').textContent=dk?'☀ 主题':'○ 主题'}
+if(dk){document.documentElement.classList.add('dk');$('#tb').textContent='☀ 主题'}
+function es(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function to(m,t){const e=$('#tt');e.textContent=m;e.style.background=t==='err'?'var(--red)':'var(--grn)';e.classList.add('on');setTimeout(()=>e.classList.remove('on'),2600)}
+function ft(ts){return ts?new Date(ts).toLocaleString('zh-CN',{hour12:false}):'—'}
+function dr(ms){const s=ms/1000;if(s<1)return ms.toFixed(0)+'ms';if(s<60)return s.toFixed(1)+'s';if(s<3600)return Math.floor(s/60)+'m'+Math.floor(s%60)+'s';const h=Math.floor(s/3600),m=Math.floor((s%3600)/60);if(h<24)return h+'h'+m+'m';return Math.floor(h/24)+'d'+(h%24)+'h'}
+
+async function api(p,o={}){
+  const h={...o.headers}
+  if(cs&&o.method&&o.method!=='GET')h['X-CSRF-Token']=cs
+  if(o.body&&typeof o.body=='string')h['Content-Type']='application/json'
+  const r=await fetch('/admin/api'+p,{...o,headers:h,credentials:'same-origin'})
+  const d=await r.json()
+  if(r.status===401){$('#li').style.display='flex'}
+  if(!r.ok)throw new Error(d.error||'失败')
+  return d
+}
+
+async function lg(){
+  try{
+    const r=await api('/login',{method:'POST',body:JSON.stringify({password:$('#pw').value}),nc:1})
+    if(r.success){
+      const s=await api('/session',{nc:1})
+      if(s.authenticated&&s.csrf_token)cs=s.csrf_token
+      $('#li').style.display='none'
+      rd()
+    }
+  }catch(e){$('#le').style.display='block';$('#le').textContent=e.message||'密码错误'}
+}
+async function lo(){try{await api('/logout',{method:'POST'})}catch(e){}cs='';$('#li').style.display='flex'}
+
+async function rd(){
+  try {
+    const[s,a,k]=await Promise.all([api('/stats').catch(()=>null),api('/tokens').catch(()=>null),api('/keys').catch(()=>null)])
+    const up=s?.uptime_display||'—',sr=s?.recent_24h_success_rate||'-'
+    let h=''
+
+    // Stats header
+    h+=`<div class="sec"><div class="st">
+      <div class="c"><div class="v" style="font-size:18px">${up}</div><div class="l">运行</div></div>
+      <div class="c"><div class="v" style="color:${s?.token_healthy?'var(--grn)':'var(--text3)'};font-size:28px">${s?.token_healthy?'✓':'✗'}</div><div class="l">Token ${s?.token_type||''}</div></div>
+      <div class="c"><div class="v">${s?.account_enabled||0}<span style="font-size:15px;color:var(--text3)">/${s?.account_total||0}</span></div><div class="l">账号${s?.account_unhealthy?` <span class="tg tg-r">${s.account_unhealthy}</span>`:''}</div></div>
+      <div class="c"><div class="v">${s?.key_count||0}</div><div class="l">Keys</div></div>
+      <div class="c"><div class="v">${s?.total_requests||0}</div><div class="l">请求</div></div>
+      <div class="c"><div class="v" style="color:${sr==='100%'?'var(--grn)':sr==='-'?'var(--text3)':'var(--ylw)'};font-size:22px">${sr}</div><div class="l">成功率</div></div>
+    </div></div>`
+
+    // Sub stats
+    h+=`<div class="sec" style="padding-top:2px"><div class="sb">
+      <div class="c"><div class="l">24h 请求</div><div class="v">${s?.recent_24h_total||0}</div></div>
+      <div class="c"><div class="l" style="color:var(--grn)">成功</div><div class="v">${s?.recent_24h_success||0}</div></div>
+      <div class="c"><div class="l" style="color:var(--red)">异常</div><div class="v">${s?.recent_24h_error||0}</div></div>
+      <div class="c"><div class="l">平均耗时</div><div class="v" style="font-size:14px">${s?.recent_24h_avg_duration||'—'}</div></div>
+    </div></div>`
+
+    // Canvas
+    h+=`<div class="sec" style="padding-top:2px"><canvas id="sp"></canvas></div>`
+
+    // Key usage ranking
+    if(s?.top_keys?.length){
+      h+=`<div class="sec"><div class="sec-hd"><h2>Key 调用排行</h2><span class="mt">累计次数</span></div><div class="rk">`
+      s.top_keys.forEach((p,i,ar)=>{
+        h+=`<div class="rk-i"><span class="n">${i+1}</span><span class="t" style="font-family:inherit">${es(p.name)}</span><span class="c">${p.count}</span><div class="b"><div class="b-in" style="width:${Math.min(100,(p.count/ar[0].count)*100)}%"></div></div></div>`
+      })
+      h+=`</div></div>`
+    }
+
+    // Account requests
+    if(s?.account_requests?.length){
+      h+=`<div class="sec"><div class="sec-hd"><h2>账号请求分布</h2></div><div class="rk">`
+      s.account_requests.forEach(a=>{h+=`<div class="rk-i"><span class="t" style="font-family:inherit">${es(a.account)}</span><span class="c">${a.count}</span></div>`})
+      h+=`</div></div>`
+    }
+
+    // Recent errors
+    if(s?.recent_errors?.length){
+      h+=`<div class="sec"><div class="sec-hd"><h2>异常</h2><span class="mt">最近 ${s.recent_errors.length}</span></div>`
+      s.recent_errors.forEach(e=>{
+        h+=`<div style="padding:7px 0;border-bottom:1px dashed var(--dash);font-size:13px"><span class="tg tg-r mr">${e.status_code}</span><span class="sm mr">${ft(e.time_str)}</span>${es(e.error_message?.slice(0,100))||'<span class="sm">无详情</span>'}<span class="sm" style="float:right">${dr(e.duration_ms)}</span></div>`
+      })
+      h+=`</div>`
+    }
+
+    // Accounts
+    h+=`<div class="sec"><div class="sec-hd"><h2>Kimi 账号</h2><span class="mt">${a?.accounts?.length||0}</span><button class="btn btn-p" onclick="sa()">+ 添加</button></div>`
+    if(a?.accounts?.length){
+      h+=`<table class="tbl"><thead><tr><th>名称</th><th>Token</th><th>类型</th><th>过期</th><th>状态</th><th></th></tr></thead><tbody>`
+      a.accounts.forEach((ac,i)=>{
+        h+=`<tr><td><span class="sm">${es(ac.name||'#'+(i+1))}</span></td><td class="mono">${ac.token_preview}</td><td class="sm">${ac.token_type}</td><td class="sm">${ac.token_expires}</td><td>${ac.token_healthy?'<span class="tg tg-g">正常</span>':'<span class="tg tg-r">异常</span>'}</td><td><button class="btn btn-d" style="padding:2px 10px;font-size:11px" onclick="event.stopPropagation();da('${ac.id}')">删除</button></td></tr>`
+      })
+      h+=`</tbody></table>`
+    }else{h+=`<div class="emp">暂无账号</div>`}
+    h+=`</div>`
+
+    // Keys
+    h+=`<div class="sec"><div class="sec-hd"><h2>API Keys</h2><span class="mt">${k?.keys?.length||0}</span><button class="btn btn-p" onclick="ck()">+ 创建</button></div>`
+    if(nk){
+      h+=`<div class="kb"><div class="kb-hd"><span>新 Key <span style="font-size:10px;opacity:.6">（关闭后不再显示）</span></span><button onclick="nk='';rd()">✕</button></div><div class="kb-bd"><code>${es(nk)}</code><button class="btn btn-s" style="padding:3px 10px;font-size:11px" onclick="navigator.clipboard.writeText(nk);to('已复制')">复制</button></div></div>`
+    }
+    if(k?.keys?.length){
+      h+=`<table class="tbl"><thead><tr><th>名称</th><th>Key</th><th>调用</th><th>最后</th><th></th></tr></thead><tbody>`
+      k.keys.forEach(kk=>{h+=`<tr><td>${es(kk.name)}</td><td class="mono">${kk.key_preview}</td><td class="mono">${kk.request_count}</td><td class="sm">${kk.last_used_str!=='-'?kk.last_used_str.slice(0,10):'-'}</td><td><button class="btn btn-d" style="padding:2px 10px;font-size:11px" onclick="event.stopPropagation();rmKey('${es(kk.key)}')">删除</button></td></tr>`})
+      h+=`</tbody></table>`
+    }else{h+=`<div class="emp">暂无 Key</div>`}
+    h+=`</div>`
+
+    // Logs
+    const lr=await api('/logs?page='+lp+'&limit=15').catch(()=>null)
+    h+=`<div class="sec"><div class="sec-hd"><h2>请求日志</h2><span class="mt">${lr?.pagination?.total||0}</span></div>`
+    if(lr?.logs?.length){
+      h+=`<table class="tbl"><thead><tr><th>时间</th><th>方法</th><th>路径</th><th>模型</th><th>状态</th><th>耗时</th></tr></thead><tbody>`
+      lr.logs.forEach(l=>{h+=`<tr onclick="sd('${l.request_id}')"><td class="mono sm">${l.time_str?ft(l.time_str):''}</td><td><span class="tg ${l.method==='GET'?'tg-g':'tg-y'}">${l.method}</span></td><td class="sm" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${es(l.path)}</td><td class="sm">${l.model||'-'}</td><td>${l.status==='success'?'<span class="tg tg-g">'+l.status_code+'</span>':'<span class="tg tg-r">'+l.status_code+'</span>'}</td><td class="mono sm">${l.duration_display}</td></tr>`})
+      h+=`</tbody></table>`
+      if(lr.pagination.page_count>1){
+        h+=`<div class="pg-nav"><button onclick="lp=1;rd()" ${lp<=1?'disabled':''}>首页</button><button onclick="lp=Math.max(1,${lp-1});rd()" ${lp<=1?'disabled':''}>‹</button><span>${lp}/${lr.pagination.page_count}</span><button onclick="lp=Math.min(${lr.pagination.page_count},${lp+1});rd()" ${lp>=lr.pagination.page_count?'disabled':''}>›</button><button onclick="lp=${lr.pagination.page_count};rd()" ${lp>=lr.pagination.page_count?'disabled':''}>末页</button></div>`
+      }
+    }else{h+=`<div class="emp">暂无日志</div>`}
+    h+=`</div>`
+
+    $('#pg').innerHTML=h
+    // Fetch log data for sparkline, then draw
+    api('/logs?limit=200&page=1').then(d=>{requestAnimationFrame(()=>sp(d))}).catch(()=>{requestAnimationFrame(()=>sp(null))})
+  } catch(e){ to('页面渲染异常: '+e.message,'err'); console.error(e) }
+}
+
+// Sparkline — receives log data directly
+function sp(d){
+  const c=$('#sp');if(!c)return
+  const rect=c.parentElement.getBoundingClientRect()
+  const W=Math.max(rect.width,300),H=80
+  c.width=W*devicePixelRatio;c.height=H*devicePixelRatio;c.style.width=W+'px';c.style.height=H+'px'
+  const x=c.getContext('2d');if(!x)return;x.scale(devicePixelRatio,devicePixelRatio)
+  const p=8,w=W-p*2,h=H-p*2-12
+  x.clearRect(0,0,W,H)
+  var cl=getComputedStyle(document.documentElement).getPropertyValue('--acc').trim()||'#bf8f65'
+  var t3=getComputedStyle(document.documentElement).getPropertyValue('--text3').trim()||'#97999f'
+  if(!d?.logs?.length){x.fillStyle=t3;x.font='12px system-ui';x.textAlign='center';x.fillText('暂无数据',W/2,H/2+4);x.textAlign='start';return}
+  var bins=Array(24).fill(0),n=Date.now()
+  d.logs.forEach(function(l){var t=new Date(l.time_str).getTime(),h2=Math.floor((n-t)/3600000);if(h2>=0&&h2<24)bins[23-h2]++})
+  if(bins.every(v=>v===0)){x.fillStyle=t3;x.font='12px system-ui';x.textAlign='center';x.fillText('暂无数据',W/2,H/2+4);x.textAlign='start';return}
+  const m=Math.max(...bins,1)
+  x.beginPath();bins.forEach((v,i)=>{const x2=p+(w*i/(bins.length-1)),y2=p+h-(v/m)*h;i===0?x.moveTo(x2,y2):x.lineTo(x2,y2)})
+  x.lineTo(p+w,p+h);x.lineTo(p,p+h);x.closePath()
+  x.fillStyle=cl;x.globalAlpha=0.12;x.fill();x.globalAlpha=1
+  x.beginPath();bins.forEach((v,i)=>{const x2=p+(w*i/(bins.length-1)),y2=p+h-(v/m)*h;i===0?x.moveTo(x2,y2):x.lineTo(x2,y2)})
+  x.strokeStyle=cl;x.lineWidth=1.5;x.lineJoin='round';x.stroke()
+  ;[0,bins.length-1].forEach(i=>{const x2=p+(w*i/(bins.length-1)),y2=p+h-(bins[i]/m)*h;x.beginPath();x.arc(x2,y2,2.5,0,Math.PI*2);x.fillStyle=cl;x.fill()})
+  x.fillStyle=t3;x.font='10px system-ui';x.fillText('24h前',p,p+h+14);x.fillText('现在',p+w-24,p+h+14)
+}
+
+// Log detail
+async function sd(id){
+  try{
+    const d=await api('/logs/'+id);if(!d)return
+    const sc=d.status_code<400?'var(--grn)':'var(--red)'
+    let h=`
+<div style="margin-bottom:16px;padding-top:4px">
+  <button onclick="rd()" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:13px;padding:0">← 返回</button>
+  <span class="mono sm" style="margin-left:8px">${d.request_id}</span>
+</div>
+<div class="sb" style="grid-template-columns:repeat(4,1fr)">
+  <div class="c"><div class="l">状态</div><div class="v" style="font-size:22px;color:${sc}">${d.status_code}</div></div>
+  <div class="c"><div class="l">耗时</div><div class="v" style="font-size:18px">${d.duration_display}</div></div>
+  <div class="c"><div class="l">方法</div><div class="v" style="font-size:18px">${d.method}</div></div>
+  <div class="c"><div class="l">Model</div><div class="v" style="font-size:13px;font-family:monospace">${es(d.model||'-')}</div></div>
+</div>
+<div class="sb" style="grid-template-columns:repeat(3,1fr);border-top:1px dashed var(--dash)">
+  <div class="c"><div class="l">Key</div><div class="v" style="font-size:14px">${es(d.api_key_name||'-')}</div></div>
+  <div class="c"><div class="l">账号</div><div class="v" style="font-size:14px">${es(d.kimi_account_name||'-')}</div></div>
+  <div class="c"><div class="l">流式</div><div class="v" style="font-size:14px">${d.is_stream?'<span class="tg tg-b">是</span>':'<span class="tg tg-y">否</span>'}</div></div>
+</div>`
+    if(d.messages?.length){
+      h+=`<div style="margin-top:18px;border-top:2px solid var(--line);padding-top:14px">`
+      d.messages.forEach(m=>{
+        const rl=m.role==='user'?'用户':m.role==='assistant'?'助手':m.role==='system'?'系统':m.role||'未知'
+        const rc=m.role==='user'?'var(--acc)':m.role==='assistant'?'var(--grn)':'var(--text2)'
+        h+=`<div style="margin-bottom:8px;padding:10px 12px;background:var(--bg2);border-radius:7px"><div style="font-size:10px;color:${rc};margin-bottom:3px;font-weight:500;text-transform:uppercase;letter-spacing:.4px">${rl}</div><div style="font-size:13px;line-height:1.6;white-space:pre-wrap;word-break:break-word">${es((m.content||'').slice(0,2000))}</div></div>`
+      })
+      h+=`</div>`
+    }
+    if(d.response_content||d.reasoning_content){
+      h+=`<div style="margin-top:14px;border-top:2px solid var(--line);padding-top:14px">`
+      if(d.reasoning_content) h+=`<div style="margin-bottom:8px"><div style="font-size:10px;color:var(--ylw);margin-bottom:3px;font-weight:500;text-transform:uppercase;letter-spacing:.4px">推理</div><div style="font-size:13px;line-height:1.6;white-space:pre-wrap;word-break:break-word;background:var(--bg2);padding:10px 12px;border-radius:7px;color:var(--text2)">${es(d.reasoning_content.slice(0,2000))}</div></div>`
+      if(d.response_content) h+=`<div><div style="font-size:10px;color:var(--grn);margin-bottom:3px;font-weight:500;text-transform:uppercase;letter-spacing:.4px">回答</div><div style="font-size:13px;line-height:1.6;white-space:pre-wrap;word-break:break-word;background:var(--bg2);padding:10px 12px;border-radius:7px">${es(d.response_content.slice(0,3000))}</div></div>`
+      h+=`</div>`
+    }
+    if(d.request_body) h+=`<details style="margin-top:14px"><summary style="cursor:pointer;font-size:12px;color:var(--text2);padding:6px 0">原始请求</summary><pre style="font-family:monospace;font-size:12px;white-space:pre-wrap;word-break:break-all;max-height:160px;overflow:auto;line-height:1.6;margin-top:6px;background:var(--bg2);padding:10px;border-radius:7px">${es(d.request_body.slice(0,2000))}</pre></details>`
+    if(d.raw_stream_body) h+=`<details style="margin-top:6px"><summary style="cursor:pointer;font-size:12px;color:var(--text2);padding:6px 0">原始 SSE</summary><pre style="font-family:monospace;font-size:12px;white-space:pre-wrap;word-break:break-all;max-height:160px;overflow:auto;line-height:1.6;margin-top:6px;background:var(--bg2);padding:10px;border-radius:7px">${es(d.raw_stream_body.slice(0,2000))}</pre></details>`
+    if(d.error_message) h+=`<div style="margin-top:10px;padding:10px 12px;background:var(--redbg);border-radius:7px;font-family:monospace;font-size:12px;color:var(--red)">${es(d.error_message)}</div>`
+    $('#pg').innerHTML=h
+  }catch(e){to(e.message,'err')}
+}
+
+function sa(){const d=document.createElement('dialog');d.innerHTML='<div class="dh"><span>添加账号</span><button onclick="this.closest(\'dialog\').close()">✕</button></div><div class="db"><label>名称（选填）</label><input id="an" placeholder="Kimi 1"><label>Kimi Token</label><textarea id="at" placeholder="refresh_token 或 access_token"></textarea></div><div class="df"><button class="btn btn-s" onclick="this.closest(\'dialog\').close()">取消</button><button class="btn btn-p" onclick="aa(this)">添加</button></div>';document.body.append(d);d.showModal()}
+async function aa(b){b.disabled=true;const n=$('#an')?.value,r=$('#at')?.value.trim();if(!r){to('输入 Token','err');b.disabled=false;return}try{await api('/tokens',{method:'POST',body:JSON.stringify({raw_token:r,name:n||undefined})});to('添加成功');b.closest('dialog').close();rd()}catch(e){to(e.message,'err');b.disabled=false}}
+async function da(id){if(!confirm('删除此账号？'))return;try{await api('/tokens/'+id,{method:'DELETE'});to('已删除');rd()}catch(e){to(e.message,'err')}}
+async function ck(){try{const d=await api('/keys',{method:'POST',body:'{}'});nk=d.new_key;to('Key 已创建');rd()}catch(e){to(e.message,'err')}}
+async function rmKey(key){if(!confirm('删除此 Key？'))return;try{nk='';await api('/keys/'+encodeURIComponent(key),{method:'DELETE'});to('已删除');rd()}catch(e){to(e.message,'err')}}
+
+;(async()=>{try{const s=await api('/session',{nc:1});if(s.authenticated&&s.csrf_token){cs=s.csrf_token;$('#li').style.display='none';rd()}}catch(e){}})()
+</script>
+</body>
+</html>
