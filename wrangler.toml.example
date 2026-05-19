@@ -1,18 +1,21 @@
-name = "worker-ai-proxy"
+name = "cf-kimi-api-ts"
 main = "src/index.ts"
 compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
-assets = { directory = "static", not_found_handling = "none" }
+
+[assets]
+directory = "static"
+not_found_handling = "none"
 
 [[kv_namespaces]]
 binding = "KV"
-# ⚠️ 请在 Cloudflare Dashboard 创建 KV Namespace 后将 id 替换为实际值
+# Replace with your KV namespace ID from Cloudflare Dashboard
 id = "YOUR_KV_NAMESPACE_ID"
 
 [[d1_databases]]
 binding = "DB"
 database_name = "cf-kimi-api-logs"
-# ⚠️ 请在 Cloudflare Dashboard 创建 D1 Database 后将 id 替换为实际值
+# Replace with your D1 database ID from Cloudflare Dashboard
 database_id = "YOUR_D1_DATABASE_ID"
 
 [vars]
