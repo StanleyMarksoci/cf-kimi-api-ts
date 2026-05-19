@@ -1,3 +1,9 @@
+# wrangler.toml.example
+# Copy this to wrangler.toml and fill in your actual IDs for local development.
+# For one-click deploy via deploy.workers.cloudflare.com, the wrangler.toml
+# in the repo intentionally omits id/database_id so the tool prompts you
+# to select existing resources.
+
 name = "cf-kimi-api-ts"
 main = "src/index.ts"
 compatibility_date = "2024-12-01"
@@ -20,6 +26,5 @@ database_id = "YOUR_D1_DATABASE_ID"
 
 [vars]
 KIMI_API_BASE = "https://www.kimi.com"
-DEFAULT_MODEL = ""
 TIMEZONE = "Asia/Shanghai"
 REQUEST_LOG_RETENTION = "1000"

@@ -100,7 +100,7 @@ database_name = "cf-kimi-api-logs"
 database_id = "你刚创建的_D1_ID"
 ```
 
-> `wrangler.toml` 已提交到仓库（占位 ID），直接编辑即可。如需本地覆盖（不污染仓库），可创建 `wrangler.toml.local`，Wrangler 会自动合并。
+> 仓库里的 `wrangler.toml` 不包含 `id` / `database_id`，这是为了让一键部署工具弹出资源选择器。本地手动部署时需要手动补上。如需本地覆盖（不污染仓库），可创建 `wrangler.toml.local`，Wrangler 会自动合并。
 
 ### 5. 设置环境变量
 
@@ -276,7 +276,7 @@ static/
 - 生产环境请设置强 `ADMIN_PASSWORD` 和稳定的 `SESSION_SECRET`
 - 公开部署时保持 `SECURE_COOKIES=true`
 - 不要把真实 Token、API Key 提交到仓库
-- 本地配置覆盖请用 `wrangler.toml.local`（已加入 `.gitignore`），不会误提交真实 ID
+- 本地配置覆盖请用 `wrangler.toml.local`（已加入 `.gitignore`），真实 ID 不会误提交
 
 ---
 
