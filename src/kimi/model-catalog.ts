@@ -49,7 +49,7 @@ export function parseModelCatalog(data: Record<string, any>): KimiModelCatalog {
   }
 }
 
-export async function fetchModelCatalog(baseUrl: string, token?: string): Promise<KimiModelCatalog> {
+export async function fetchModelCatalog(baseUrl: string = 'https://www.kimi.com', token?: string): Promise<KimiModelCatalog> {
   const resolvedBaseUrl = baseUrl.replace(/\/+$/, '')
   const identity = loadOrCreateClientIdentity()
   const headers = buildKimiHeaders({
@@ -83,7 +83,7 @@ export async function fetchModelCatalog(baseUrl: string, token?: string): Promis
 
 export async function getModelCatalog(
   kv: KVNamespace,
-  baseUrl: string,
+  baseUrl: string = 'https://www.kimi.com',
   forceRefresh = false,
   token?: string,
 ): Promise<KimiModelCatalog> {

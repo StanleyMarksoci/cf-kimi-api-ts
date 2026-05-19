@@ -6,3 +6,12 @@ compatibility_flags = ["nodejs_compat"]
 [assets]
 directory = "static"
 not_found_handling = "none"
+
+[[kv_namespaces]]
+binding = "KV"
+id = "YOUR_KV_NAMESPACE_ID"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "cf-kimi-api-logs"
+database_id = "YOUR_D1_DATABASE_ID"
