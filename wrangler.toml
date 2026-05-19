@@ -1,0 +1,19 @@
+name = "cf-kimi-api-ts"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+[assets]
+directory = "static"
+not_found_handling = "none"
+
+# ⚠️ 部署前必读：先创建 KV + D1，将下方两个 ID 替换为真实 ID。
+#    否则部署会失败。详见 README → 部署 → 方式一。
+[[kv_namespaces]]
+binding = "KV"
+id = "YOUR_KV_NAMESPACE_ID"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "cf-kimi-api-logs"
+database_id = "YOUR_D1_DATABASE_ID"

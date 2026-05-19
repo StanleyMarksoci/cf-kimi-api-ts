@@ -6,8 +6,7 @@ dist/
 .wrangler/
 *.tsbuildinfo
 
-# Local overrides (not committed)
-wrangler.toml
+# Local overrides
 wrangler.toml.local
 
 # Environment & secrets
