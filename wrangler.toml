@@ -1,7 +1,3 @@
-# wrangler.toml
-# Git 集成部署：绑定（KV/D1）在 Cloudflare Dashboard 中配置，此处不写 ID。
-# 本地 CLI 部署：复制 wrangler.toml.example 并按需填入 ID。
-
 name = "cf-kimi-api-ts"
 main = "src/index.ts"
 compatibility_date = "2024-12-01"
@@ -10,6 +6,17 @@ compatibility_flags = ["nodejs_compat"]
 [assets]
 directory = "static"
 not_found_handling = "none"
+
+# ⚠️ 部署前先创建 KV + D1，将 ID 填入下方。
+# 详见 README → 部署 → 方式一 第 ①~③ 步。
+[[kv_namespaces]]
+binding = "KV"
+id = "YOUR_KV_NAMESPACE_ID"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "cf-kimi-api-logs"
+database_id = "YOUR_D1_DATABASE_ID"
 
 [vars]
 KIMI_API_BASE = "https://www.kimi.com"
