@@ -6,8 +6,7 @@ dist/
 .wrangler/
 *.tsbuildinfo
 
-# Local overrides (contains real KV/D1 IDs)
-wrangler.toml
+# Local overrides
 wrangler.toml.local
 
 # Environment & secrets
