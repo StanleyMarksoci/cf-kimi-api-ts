@@ -146,14 +146,29 @@ router.post("/admin/api/logout", async (c) => {
   return c.json({ success: true });
 });
 
+// ─── Helper: check bindings ───
+
+function kvReady(c: DC): boolean {
+  return typeof c.env.KV?.get === 'function'
+}
+
+function dbReady(c: DC): boolean {
+  return typeof c.env.DB?.prepare === 'function'
+}
+
 // ─── Stats ───
 
 router.get("/admin/api/stats", async (c) => {
   if (!(await isAuthed(c))) return c.json({ error: "Unauthorized" }, 401);
 
+  if (!kvReady(c)) {
+    return c.json({ setup_needed: true, missing: ['KV'], message: 'KV 命名空间未绑定。请在 Cloudflare Dashboard → 你的 Worker → 设置 → 绑定中添加 KV 命名空间。' })
+  }
+
   try {
-    // 确保 D1 表存在（兼容首次部署无表的情况）
-    await c.env.DB.prepare(`CREATE TABLE IF NOT EXISTS request_logs (
+    // Setup D1 table if available
+    if (dbReady(c)) {
+      await c.env.DB.prepare(`CREATE TABLE IF NOT EXISTS request_logs (
         id TEXT PRIMARY KEY,
         timestamp REAL NOT NULL,
         request_id TEXT NOT NULL,
@@ -293,6 +308,7 @@ router.get("/admin/api/stats", async (c) => {
 
 router.get("/admin/api/keys", async (c) => {
   if (!(await isAuthed(c))) return c.json({ error: "Unauthorized" }, 401);
+  if (!kvReady(c)) return c.json({ error: "KV 未绑定", setup_needed: true }, 503);
   const keys = await loadKeys(c.env.KV);
   return c.json({
     keys: keys.map((k) => ({
@@ -311,6 +327,7 @@ router.get("/admin/api/keys", async (c) => {
 router.post("/admin/api/keys", async (c) => {
   if (!(await isAuthed(c))) return c.json({ error: "Unauthorized" }, 401);
   if (!csrfOk(c)) return c.json({ error: "Forbidden" }, 403);
+  if (!kvReady(c)) return c.json({ error: "KV 未绑定", setup_needed: true }, 503);
   const body = (await c.req.json().catch(() => ({}))) as Record<string, unknown>;
   const created = await createKey(c.env.KV, typeof body.name === "string" ? body.name : undefined);
   return c.json({ new_key: created.key });
@@ -319,6 +336,7 @@ router.post("/admin/api/keys", async (c) => {
 router.delete("/admin/api/keys/:key", async (c) => {
   if (!(await isAuthed(c))) return c.json({ error: "Unauthorized" }, 401);
   if (!csrfOk(c)) return c.json({ error: "Forbidden" }, 403);
+  if (!kvReady(c)) return c.json({ error: "KV 未绑定", setup_needed: true }, 503);
   const deleted = await deleteKey(c.env.KV, c.req.param("key"));
   return c.json({ deleted });
 });
@@ -327,6 +345,7 @@ router.delete("/admin/api/keys/:key", async (c) => {
 
 router.get("/admin/api/logs", async (c) => {
   if (!(await isAuthed(c))) return c.json({ error: "Unauthorized" }, 401);
+  if (!dbReady(c)) return c.json({ error: "D1 未绑定", setup_needed: true }, 503);
   const page = Math.max(1, Number.parseInt(c.req.query("page") || "1", 10) || 1);
   const pageSize = 20;
   const status = c.req.query("status") || undefined;
@@ -384,6 +403,7 @@ router.get("/admin/api/logs", async (c) => {
 
 router.get("/admin/api/logs/:id", async (c) => {
   if (!(await isAuthed(c))) return c.json({ error: "Unauthorized" }, 401);
+  if (!dbReady(c)) return c.json({ error: "D1 未绑定", setup_needed: true }, 503);
   const item = await getLog(c.env.DB, c.req.param("id"));
   if (!item) return c.json({ error: "Not Found" }, 404);
 
@@ -449,6 +469,7 @@ router.get("/admin/api/logs/:id", async (c) => {
 
 router.get("/admin/api/tokens", async (c) => {
   if (!(await isAuthed(c))) return c.json({ error: "Unauthorized" }, 401);
+  if (!kvReady(c)) return c.json({ error: "KV 未绑定", setup_needed: true }, 503);
   const accounts = await loadAccounts(c.env.KV);
   const list = accounts.map((a) => {
     const h = accountHealth(a.rawToken);
@@ -470,6 +491,7 @@ router.get("/admin/api/tokens", async (c) => {
 router.post("/admin/api/tokens", async (c) => {
   if (!(await isAuthed(c))) return c.json({ error: "Unauthorized" }, 401);
   if (!csrfOk(c)) return c.json({ error: "Forbidden" }, 403);
+  if (!kvReady(c)) return c.json({ error: "KV 未绑定", setup_needed: true }, 503);
   const body = (await c.req.json().catch(() => ({}))) as Record<string, unknown>;
   const raw = typeof body.raw_token === "string" ? body.raw_token.trim() : "";
   if (!raw) return c.json({ success: false, error: "Token 不能为空" }, 400);
@@ -480,6 +502,7 @@ router.post("/admin/api/tokens", async (c) => {
 router.patch("/admin/api/tokens/:id", async (c) => {
   if (!(await isAuthed(c))) return c.json({ error: "Unauthorized" }, 401);
   if (!csrfOk(c)) return c.json({ error: "Forbidden" }, 403);
+  if (!kvReady(c)) return c.json({ error: "KV 未绑定", setup_needed: true }, 503);
   const body = (await c.req.json().catch(() => ({}))) as Record<string, unknown>;
   const patch: Record<string, unknown> = {};
   if (typeof body.name === "string") patch.name = body.name;
@@ -495,6 +518,7 @@ router.patch("/admin/api/tokens/:id", async (c) => {
 router.delete("/admin/api/tokens/:id", async (c) => {
   if (!(await isAuthed(c))) return c.json({ error: "Unauthorized" }, 401);
   if (!csrfOk(c)) return c.json({ error: "Forbidden" }, 403);
+  if (!kvReady(c)) return c.json({ error: "KV 未绑定", setup_needed: true }, 503);
   const deleted = await deleteAccount(c.env.KV, c.req.param("id"));
   if (!deleted) return c.json({ success: false, error: "账号不存在" }, 404);
   return c.json({ success: true });
