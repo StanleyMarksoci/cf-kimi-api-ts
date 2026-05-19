@@ -48,36 +48,45 @@
 
 ### 方式一：Fork → Git 集成部署（无需 CLI）
 
-Cloudflare Workers 支持直接连接 GitHub 仓库，fork 后自动部署。
+Cloudflare Workers 支持直接连接 GitHub 仓库，fork 后在网页上完成全部配置。
 
 #### 1. Fork 本仓库
 
 点击页面右上角 **Fork**，将仓库 fork 到你的 GitHub 账号。
 
-#### 2. 创建 KV 命名空间
+#### 2. 创建应用程序并连接 GitHub
 
-Cloudflare Dashboard → **Workers & Pages** → **KV** → 创建命名空间，名称随意（如 `CF_KIMI_API`）。记下名称。
+Cloudflare Dashboard → **Workers & Pages** → **创建应用程序** → **连接 GitHub 仓库** → 授权 GitHub。
 
-#### 3. 创建 D1 数据库
+选择你 fork 的仓库 `cf-kimi-api-ts` → **开始设置**。
 
-Cloudflare Dashboard → **Workers & Pages** → **D1** → 创建数据库，名称 `cf-kimi-api-logs`。记下名称。
+| 字段 | 填写 |
+|------|------|
+| **项目名称** | `cf-kimi-api-ts` |
+| **生产分支** | `main` |
+| **框架预设** | 选择 **None** 或留空（项目使用 wrangler.toml） |
+| **构建命令** | 留空（项目无需额外构建） |
+| **部署命令** | 留空（项目自带 `wrangler.toml`） |
+| **环境变量（可选）** | 先跳过，部署后再添加 |
 
-#### 4. 创建 Worker 并连接 GitHub
+点击 **保存并部署**。Cloudflare 会自动从仓库拉取代码并部署 Worker。
 
-Cloudflare Dashboard → **Workers & Pages** → **创建应用程序** → **Worker** → 名称填 `cf-kimi-api-ts` → **部署**。
+#### 3. 创建 KV 命名空间
 
-进入刚创建的 Worker → 顶部 **配置 Worker** 或 **设置** → **Git 集成** → **连接 Git** → 授权 GitHub → 选择你 fork 的仓库 `cf-kimi-api-ts` → 分支 `main` → **开始部署**。
+Cloudflare Dashboard → **Workers & Pages** → **KV** → 创建命名空间，名称随意（如 `CF_KIMIA_API`）。
 
-Cloudflare 会自动从仓库拉取代码并部署。
+#### 4. 创建 D1 数据库
+
+Cloudflare Dashboard → **Workers & Pages** → **D1** → 创建数据库，名称 `cf-kimi-api-logs`。
 
 #### 5. 绑定 KV 和 D1
 
-Worker `cf-kimi-api-ts` → **设置 → 绑定** → 添加绑定：
+进入 Worker `cf-kimi-api-ts` → **设置 → 绑定** → 添加绑定：
 
-| 变量名 | 绑定类型 | 选择 |
-|--------|----------|------|
-| `KV` | KV Namespace | 第 2 步创建的 KV |
-| `DB` | D1 Database | 第 3 步创建的 D1 |
+| 变量名 | 绑定类型 | 选择资源 |
+|--------|----------|----------|
+| `KV` | KV Namespace | 第 3 步创建的 KV |
+| `DB` | D1 Database | 第 4 步创建的 D1 |
 
 #### 6. 添加环境变量
 
@@ -91,7 +100,7 @@ Worker `cf-kimi-api-ts` → **设置 → 变量** → 添加环境变量：
 | `TIMEZONE` | `Asia/Shanghai` |
 | `REQUEST_LOG_RETENTION` | `1000` |
 
-> 环境变量添加后，Cloudflare 会自动触发重新部署。
+> 添加变量后 Cloudflare 会自动触发重新部署。
 
 #### 7. 首次使用
 
