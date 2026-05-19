@@ -1,8 +1,0 @@
-name = "cf-kimi-api-ts"
-main = "src/index.ts"
-compatibility_date = "2024-12-01"
-compatibility_flags = ["nodejs_compat"]
-
-[assets]
-directory = "static"
-not_found_handling = "none"
