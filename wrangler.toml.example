@@ -1,6 +1,6 @@
 # wrangler.toml.example
-# 本地 CLI 部署时复制为 wrangler.toml，填入实际 ID。
-# Git 集成部署时绑定在 Cloudflare Dashboard 中配置，此文件无需填 ID。
+# CLI 部署（方式二）复制为 wrangler.toml，填入真实 ID。
+# Git 集成部署（方式一）无需此文件，绑定在 Dashboard 上配。
 
 name = "cf-kimi-api-ts"
 main = "src/index.ts"

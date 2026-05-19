@@ -7,17 +7,6 @@ compatibility_flags = ["nodejs_compat"]
 directory = "static"
 not_found_handling = "none"
 
-# ⚠️ 部署前先创建 KV + D1，将 ID 填入下方。
-# 详见 README → 部署 → 方式一 第 ①~③ 步。
-[[kv_namespaces]]
-binding = "KV"
-id = "YOUR_KV_NAMESPACE_ID"
-
-[[d1_databases]]
-binding = "DB"
-database_name = "cf-kimi-api-logs"
-database_id = "YOUR_D1_DATABASE_ID"
-
 [vars]
 KIMI_API_BASE = "https://www.kimi.com"
 DEFAULT_MODEL = ""

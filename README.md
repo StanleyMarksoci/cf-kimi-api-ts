@@ -37,54 +37,54 @@
 
 ### 方式一：Git 集成部署（无需 CLI）
 
-适合不想操作命令行的用户，全在 Cloudflare 网页上完成。
+全程点击，不碰代码。
 
-**① Fork 本仓库** → 点击右上角 **Fork**。
+**① Fork**
 
-**② 创建 KV + D1**
+点击右上角 **Fork**。
 
-先创建存储资源，记下返回的 ID：
+**② 创建 Worker 并连接 GitHub**
 
-| 资源 | 创建位置 | 名称示例 |
-|------|----------|----------|
-| KV Namespace | Workers & Pages → **KV** → 创建 | `CF_KIMI_API` |
-| D1 Database | Workers & Pages → **D1** → 创建 | `cf-kimi-api-logs` |
-
-**③ 将 ID 写入 `wrangler.toml`**
-
-在你的 fork 仓库中编辑 `wrangler.toml`，将 `YOUR_KV_NAMESPACE_ID` 和 `YOUR_D1_DATABASE_ID` 替换为上一步记下的 ID。
-
-> 这一步必须在下个步骤之前完成，否则部署会因 ID 无效而失败。
-
-**④ 创建应用并连接 GitHub**
-
-Cloudflare Dashboard → **Workers & Pages** → **创建应用程序** → **连接 GitHub 仓库** → 授权 GitHub → 选择你 fork 的 `cf-kimi-api-ts`。
+Cloudflare Dashboard → **Workers & Pages** → **创建应用程序** → **连接 GitHub 仓库** → 授权 GitHub → 选择 fork 的 `cf-kimi-api-ts`。
 
 | 字段 | 填写 |
 |------|------|
 | 项目名称 | `cf-kimi-api-ts` |
 | 生产分支 | `main` |
-| 框架预设 | 留空 |
-| 构建命令 | 留空 |
-| 部署命令 | 留空 |
+| 框架预设、构建命令、部署命令 | 全部留空 |
 
-→ **保存并部署**。
+→ **保存并部署**（首次部署无 KV/D1 绑定，但能成功）。
 
-**⑤ 添加环境变量**
+**③ 创建 KV**
 
-Worker `cf-kimi-api-ts` → **设置 → 变量** → 添加：
+Dashboard → **Workers & Pages** → **KV** → 创建命名空间，名称随意（如 `CF_KIMI_API`）。
+
+**④ 创建 D1**
+
+Dashboard → **Workers & Pages** → **D1** → 创建数据库，名称 `cf-kimi-api-logs`。
+
+**⑤ 绑定 KV + D1**
+
+Worker `cf-kimi-api-ts` → **设置 → 绑定** → 添加：
+
+| 变量名 | 类型 | 选择 |
+|--------|------|------|
+| `KV` | KV Namespace | ③ 创建的 KV |
+| `DB` | D1 Database | ④ 创建的 D1 |
+
+**⑥ 添加环境变量**
+
+Worker `cf-kimi-api-ts` → **设置 → 变量** → 添加（添加后自动重新部署）：
 
 | 变量名 | 值 |
 |--------|-----|
 | `ADMIN_PASSWORD` | 你的管理密码 |
-| `SESSION_SECRET` | `openssl rand -base64 32` 生成 |
+| `SESSION_SECRET` | 随便一个字符串，如 `my-secret` |
 | `KIMI_API_BASE` | `https://www.kimi.com` |
 | `TIMEZONE` | `Asia/Shanghai` |
 | `REQUEST_LOG_RETENTION` | `1000` |
 
-> 添加变量后 Cloudflare 自动重新部署。
-
-**⑥ 访问**
+**⑦ 访问**
 
 `https://cf-kimi-api-ts.你的子域名.workers.dev/admin` → 用 `ADMIN_PASSWORD` 登录 → 添加 Kimi Token → 创建 API Key → 开始调用。
 
