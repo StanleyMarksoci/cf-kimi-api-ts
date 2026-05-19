@@ -1,8 +1,11 @@
 # wrangler.toml.example
 # Copy this to wrangler.toml and fill in your actual IDs for local development.
 # For one-click deploy via deploy.workers.cloudflare.com, the wrangler.toml
-# in the repo intentionally omits id/database_id so the tool prompts you
+# in the repo intentionally uses placeholder IDs so the tool prompts you
 # to select existing resources.
+#
+# Fork this repo first, then deploy via:
+#   https://deploy.workers.cloudflare.com/?url=https://github.com/你的用户名/cf-kimi-api-ts
 
 name = "cf-kimi-api-ts"
 main = "src/index.ts"

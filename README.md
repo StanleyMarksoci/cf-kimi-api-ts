@@ -40,9 +40,38 @@
 
 ## 🚀 部署
 
-### 方式一：GitHub Actions（推荐）
+### 第一步：Fork 仓库
 
-将代码推送到 GitHub，自动部署到 Cloudflare Workers。
+点击右上角 **Fork** 按钮，将本仓库 fork 到你的 GitHub 账号下。
+
+---
+
+### 方式一：一键部署（推荐，无需代码）
+
+[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Aleeyoo/cf-kimi-api-ts)
+
+**操作步骤：**
+
+1. **Fork 本仓库**（已完成）
+2. 点击上方按钮 → 登录 Cloudflare → **选择你 fork 的仓库**
+3. 在部署配置页面，创建或选择以下资源：
+
+| 字段 | 说明 |
+|------|------|
+| **KV 命名空间** | 新建一个（如 `cf-kimi-api-kv`）或选已有的 |
+| **D1 数据库** | 新建一个 `cf-kimi-api-logs` 或选已有的 |
+| `ADMIN_PASSWORD` | 设置管理面板密码 |
+| `SESSION_SECRET` | 运行 `openssl rand -base64 32` 生成填入 |
+
+> 其他字段（`KIMI_TOKEN`、`OPENAI_API_KEY`、`SECURE_COOKIES` 等）与本项目无关，**留空即可**。
+
+4. 部署完成后，在 Cloudflare Dashboard → Worker `cf-kimi-api-ts` → **设置 → 绑定**，确认 KV 和 D1 已绑定。
+
+---
+
+### 方式二：GitHub Actions 自动化部署
+
+配置好后，每次推送代码到 `main` 分支都会自动部署。
 
 #### 1. 在 Cloudflare 准备资源
 
@@ -54,7 +83,7 @@
 
 #### 2. 配置 GitHub Secrets
 
-在 GitHub 仓库 → **Settings → Secrets and variables → Actions** 中添加：
+在你 fork 的仓库 → **Settings → Secrets and variables → Actions** 中添加：
 
 | Secret | 说明 | 获取方式 |
 |--------|------|----------|
@@ -62,42 +91,41 @@
 | `ADMIN_PASSWORD` | 管理面板密码 | 自己设 |
 | `SESSION_SECRET` | session 签名密钥 | `openssl rand -base64 32` |
 
-#### 3. 推送代码
+#### 3. 推送代码（触发自动部署）
 
 ```bash
-git remote add origin https://github.com/Aleeyoo/cf-kimi-api-ts.git
-git push -u origin main
+git push origin main
 ```
 
-Actions 自动部署，进度查看：仓库 → Actions 页面。
+Actions 自动部署，进度查看：你 fork 的仓库 → Actions 页面。
 
-#### 4. 绑定 KV 和 D1
+---
 
-部署完成后，在 Cloudflare Dashboard → 你的 Worker → **设置 → 绑定** 添加：
+### 部署后配置
+
+#### 绑定 KV 和 D1
+
+一键部署会自动绑定，如需手动确认：Cloudflare Dashboard → 你的 Worker → **设置 → 绑定**
 
 | 变量名 | 绑定类型 | 选择 |
 |--------|----------|------|
 | `KV` | KV Namespace | 你创建的 KV |
 | `DB` | D1 Database | 你创建的 D1 |
 
-#### 5. 首次使用
+#### 绑定自定义域名（可选）
 
-访问 `https://你的域名/admin` → 用 `ADMIN_PASSWORD` 登录 → 添加 Kimi Token → 创建 API Key → 开始调用。
+如果你有域名托管在 Cloudflare，可以绑定到 Worker 上绕过代理限制：
 
-### 方式二：一键部署
+```bash
+# 安装依赖后执行
+npx wrangler triggers deploy --name "cf-kimi-api-ts" --route "你的域名/*"
+```
 
-[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Aleeyoo/cf-kimi-api-ts)
+然后在 Cloudflare Dashboard 添加 DNS A 记录（代理模式，橙云）指向 `192.0.2.1`。
 
-> ⚠️ 部署工具会额外显示 `KIMI_TOKEN`、`OPENAI_API_KEY`、`SECURE_COOKIES` 等字段，这些与本项目无关，**留空或填任意值即可**，不影响运行。
+#### 首次使用
 
-填写以下 4 项，其余跳过：
-
-| 字段 | 说明 |
-|------|------|
-| **KV 命名空间** | 新建或选一个已有的 |
-| **D1 数据库** | 新建 `cf-kimi-api-logs` 或选已有的 |
-| `ADMIN_PASSWORD` | 管理面板密码 |
-| `SESSION_SECRET` | `openssl rand -base64 32` 生成 |
+访问 `https://你的域名/admin` 或 `https://cf-kimi-api-ts.你的子域名.workers.dev/admin` → 用 `ADMIN_PASSWORD` 登录 → 添加 Kimi Token → 创建 API Key → 开始调用。
 
 ---
 
