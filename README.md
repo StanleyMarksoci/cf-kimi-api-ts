@@ -6,14 +6,6 @@
   基于 Cloudflare Workers，将 Kimi Web 的专有协议转换为 OpenAI 兼容的 <code>/v1/*</code> 接口
 </p>
 
-
-
-<p align="center">
-  <a href="https://deploy.workers.cloudflare.com/?url=https://github.com/Aleeyoo/cf-kimi-api-ts">
-    <img src="https://deploy.workers.cloudflare.com/button" alt="Deploy to Cloudflare Workers">
-  </a>
-</p>
-
 <p align="center">
   <img src="https://img.shields.io/badge/Cloudflare-Workers-F38020?logo=cloudflare&logoColor=white" alt="Cloudflare Workers">
   <img src="https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white" alt="TypeScript">
@@ -48,24 +40,9 @@
 
 ## 🚀 部署
 
-### 方式一：一键部署（推荐）
+### 方式一：GitHub Actions（推荐）
 
-[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Aleeyoo/cf-kimi-api-ts)
-
-点击按钮，在引导页填写以下字段，其余**全部留空**：
-
-| 字段 | 说明 |
-|------|------|
-| **KV 命名空间** | 新建或选一个已有的 |
-| **D1 数据库** | 新建 `cf-kimi-api-logs` 或选已有的 |
-| `ADMIN_PASSWORD` | 管理面板密码 |
-| `SESSION_SECRET` | `openssl rand -base64 32` 生成 |
-
-> 表单中其他字段（`KIMI_TOKEN`、`OPENAI_API_KEY` 等）是部署工具自带的，本项目不使用，**留空即可**。部署后访问 `/admin` 登录，在面板中配置 Kimi Token。
-
-### 方式二：GitHub Actions 自动部署
-
-将代码推送到 GitHub，利用 Actions 自动部署。
+将代码推送到 GitHub，自动部署到 Cloudflare Workers。
 
 #### 1. 在 Cloudflare 准备资源
 
@@ -79,19 +56,20 @@
 
 在 GitHub 仓库 → **Settings → Secrets and variables → Actions** 中添加：
 
-| Secret | 说明 |
-|--------|------|
-| `CLOUDFLARE_API_TOKEN` | Cloudflare API 令牌 |
-| `ADMIN_PASSWORD` | 管理面板密码 |
-| `SESSION_SECRET` | 运行 `openssl rand -base64 32` 生成 |
+| Secret | 说明 | 获取方式 |
+|--------|------|----------|
+| `CLOUDFLARE_API_TOKEN` | Cloudflare API 令牌 | 上一步创建的 |
+| `ADMIN_PASSWORD` | 管理面板密码 | 自己设 |
+| `SESSION_SECRET` | session 签名密钥 | `openssl rand -base64 32` |
 
 #### 3. 推送代码
 
 ```bash
-git push origin main
+git remote add origin https://github.com/Aleeyoo/cf-kimi-api-ts.git
+git push -u origin main
 ```
 
-Actions 自动部署，可在仓库 Actions 页查看进度。
+Actions 自动部署，进度查看：仓库 → Actions 页面。
 
 #### 4. 绑定 KV 和 D1
 
@@ -104,7 +82,22 @@ Actions 自动部署，可在仓库 Actions 页查看进度。
 
 #### 5. 首次使用
 
-访问 `https://你的域名/admin` → 登录 → 添加 Kimi Token → 创建 API Key → 开始调用。
+访问 `https://你的域名/admin` → 用 `ADMIN_PASSWORD` 登录 → 添加 Kimi Token → 创建 API Key → 开始调用。
+
+### 方式二：一键部署
+
+[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Aleeyoo/cf-kimi-api-ts)
+
+> ⚠️ 部署工具会额外显示 `KIMI_TOKEN`、`OPENAI_API_KEY`、`SECURE_COOKIES` 等字段，这些与本项目无关，**留空或填任意值即可**，不影响运行。
+
+填写以下 4 项，其余跳过：
+
+| 字段 | 说明 |
+|------|------|
+| **KV 命名空间** | 新建或选一个已有的 |
+| **D1 数据库** | 新建 `cf-kimi-api-logs` 或选已有的 |
+| `ADMIN_PASSWORD` | 管理面板密码 |
+| `SESSION_SECRET` | `openssl rand -base64 32` 生成 |
 
 ---
 
