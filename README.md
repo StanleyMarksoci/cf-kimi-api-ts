@@ -96,7 +96,7 @@ database_id = "你的真实D1_ID"
 
 ---
 
-**④ 添加环境变量**
+> **步骤 ④ —— 添加环境变量**
 
 Worker `cf-kimi-api-ts` → **设置 → 变量** → 添加：
 
@@ -114,10 +114,13 @@ Worker `cf-kimi-api-ts` → **设置 → 变量** → 添加：
 | `REQUEST_LOG_RETENTION` | `1000` | 最大保留日志条数 |
 | `DEFAULT_MODEL` | 空 | 默认模型名，如 `kimi-k2.6` |
 
-**⑤ 开始使用**
+> **步骤 ⑤ —— 开始使用**
 
 1. 打开 `https://cf-kimi-api-ts.你的子域名.workers.dev/admin`，输入密码登录
-2. 在 **账号** 页面添加你的 Kimi Token（refresh_token 或 JWT）
+2. 在 **账号** 页面添加 Kimi Token
+
+   > 获取方式：打开 [kimi.com](https://kimi.com) 并登录 → F12 → **Application → Local Storage** → 搜索 `refresh_token` 或 `access_token`，复制值。
+
 3. 在 **Keys** 页面创建一个 API Key
 4. 用任意 OpenAI SDK 调用：
 
