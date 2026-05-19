@@ -6,3 +6,14 @@ compatibility_flags = ["nodejs_compat"]
 [assets]
 directory = "static"
 not_found_handling = "none"
+
+# 部署前先在 Cloudflare 创建 KV 和 D1，将 ID 填入下方两个字段。
+# 见 README → 部署 → 方式一 第 ③ 步。
+[[kv_namespaces]]
+binding = "KV"
+id = "YOUR_KV_NAMESPACE_ID"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "cf-kimi-api-logs"
+database_id = "YOUR_D1_DATABASE_ID"
