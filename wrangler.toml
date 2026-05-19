@@ -6,9 +6,3 @@ compatibility_flags = ["nodejs_compat"]
 [assets]
 directory = "static"
 not_found_handling = "none"
-
-[vars]
-KIMI_API_BASE = "https://www.kimi.com"
-DEFAULT_MODEL = ""
-TIMEZONE = "Asia/Shanghai"
-REQUEST_LOG_RETENTION = "1000"
