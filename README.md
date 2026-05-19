@@ -9,6 +9,12 @@
 
 
 <p align="center">
+  <a href="https://deploy.workers.cloudflare.com/?url=https://github.com/Aleeyoo/cf-kimi-api-ts">
+    <img src="https://deploy.workers.cloudflare.com/button" alt="Deploy to Cloudflare Workers">
+  </a>
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/badge/Cloudflare-Workers-F38020?logo=cloudflare&logoColor=white" alt="Cloudflare Workers">
   <img src="https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white" alt="TypeScript">
   <img src="https://img.shields.io/badge/Hono-4.7-E36002" alt="Hono">
@@ -40,56 +46,65 @@
 
 ---
 
-## 🚀 快速部署
+## 🚀 部署
 
-将代码推送到 GitHub 即可自动部署到 Cloudflare Workers。
+### 方式一：一键部署（推荐）
 
-### 前置条件
+[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Aleeyoo/cf-kimi-api-ts)
 
-- GitHub 账号
-- [Cloudflare 账号](https://dash.cloudflare.com/)
+点击按钮，在引导页填写以下字段，其余**全部留空**：
 
-### 1. 在 Cloudflare 准备资源
+| 字段 | 说明 |
+|------|------|
+| **KV 命名空间** | 新建或选一个已有的 |
+| **D1 数据库** | 新建 `cf-kimi-api-logs` 或选已有的 |
+| `ADMIN_PASSWORD` | 管理面板密码 |
+| `SESSION_SECRET` | `openssl rand -base64 32` 生成 |
 
-在 [Cloudflare Dashboard](https://dash.cloudflare.com/) 创建：
+> 表单中其他字段（`KIMI_TOKEN`、`OPENAI_API_KEY` 等）是部署工具自带的，本项目不使用，**留空即可**。部署后访问 `/admin` 登录，在面板中配置 Kimi Token。
+
+### 方式二：GitHub Actions 自动部署
+
+将代码推送到 GitHub，利用 Actions 自动部署。
+
+#### 1. 在 Cloudflare 准备资源
 
 | 资源 | 用途 | 创建位置 |
 |------|------|----------|
 | **KV Namespace** | 存储账号、Key、配置 | Workers & Pages → KV → 创建 |
 | **D1 Database** | 存储请求日志 | Workers & Pages → D1 → 创建 |
-| **API Token** | 授权 GitHub Actions 部署 | [API Tokens](https://dash.cloudflare.com/profile/api-tokens) → 创建令牌 → Workers Edit 模板 |
+| **API Token** | 授权部署 | [API Tokens](https://dash.cloudflare.com/profile/api-tokens) → 创建令牌 → Workers Edit 模板 |
 
-### 2. 配置 GitHub Secrets
+#### 2. 配置 GitHub Secrets
 
 在 GitHub 仓库 → **Settings → Secrets and variables → Actions** 中添加：
 
-| Secret | 说明 | 获取方式 |
-|--------|------|----------|
-| `CLOUDFLARE_API_TOKEN` | Cloudflare API 令牌 | 上一步创建的 API Token |
-| `ADMIN_PASSWORD` | 管理面板密码 | 自己设一个强密码 |
-| `SESSION_SECRET` | session 签名密钥 | `openssl rand -base64 32` 运行生成 |
+| Secret | 说明 |
+|--------|------|
+| `CLOUDFLARE_API_TOKEN` | Cloudflare API 令牌 |
+| `ADMIN_PASSWORD` | 管理面板密码 |
+| `SESSION_SECRET` | 运行 `openssl rand -base64 32` 生成 |
 
-### 3. 推送代码触发部署
+#### 3. 推送代码
 
 ```bash
-git remote add origin https://github.com/你的用户名/cf-kimi-api-ts.git
-git push -u origin main
+git push origin main
 ```
 
-推送后 GitHub Actions 自动执行部署。可在仓库 Actions 页面查看进度。
+Actions 自动部署，可在仓库 Actions 页查看进度。
 
-### 4. 绑定 KV 和 D1
+#### 4. 绑定 KV 和 D1
 
 部署完成后，在 Cloudflare Dashboard → 你的 Worker → **设置 → 绑定** 添加：
 
-| 变量名称 | 绑定类型 | 选择 |
-|----------|----------|------|
+| 变量名 | 绑定类型 | 选择 |
+|--------|----------|------|
 | `KV` | KV Namespace | 你创建的 KV |
 | `DB` | D1 Database | 你创建的 D1 |
 
-### 5. 首次使用
+#### 5. 首次使用
 
-访问 `https://你的域名/admin`，用 `ADMIN_PASSWORD` 登录 → 添加 Kimi Token → 创建 API Key → 开始使用。
+访问 `https://你的域名/admin` → 登录 → 添加 Kimi Token → 创建 API Key → 开始调用。
 
 ---
 
