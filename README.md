@@ -6,11 +6,7 @@
   基于 Cloudflare Workers，将 Kimi Web 的专有协议转换为 OpenAI 兼容的 <code>/v1/*</code> 接口
 </p>
 
-<p align="center">
-  <a href="https://deploy.workers.cloudflare.com/?url=https://github.com/Aleeyoo/cf-kimi-api-ts">
-    <img src="https://deploy.workers.cloudflare.com/button" alt="Deploy to Cloudflare Workers">
-  </a>
-</p>
+
 
 <p align="center">
   <img src="https://img.shields.io/badge/Cloudflare-Workers-F38020?logo=cloudflare&logoColor=white" alt="Cloudflare Workers">
@@ -44,147 +40,77 @@
 
 ---
 
-## 🚀 一键部署
+## 🚀 快速部署
 
-[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Aleeyoo/cf-kimi-api-ts)
-
-点击按钮，在 Cloudflare 引导页只需关注以下字段：
-
-| 字段 | 必填 | 说明 |
-|------|------|------|
-| **KV 命名空间** | ✅ | 选择已有或创建一个新 Namespace |
-| **D1 数据库** | ✅ | 选择已有或创建一个新 Database |
-| `ADMIN_PASSWORD` | ✅ | 管理面板登录密码，自己设一个 |
-| `SESSION_SECRET` | ✅ | `openssl rand -base64 32` 生成随机字符串，用于加密登录 session |
-| `KIMI_TOKEN` | ➖ | **留空**，部署后在管理面板添加 |
-| `OPENAI_API_KEY` | ➖ | **留空**，部署后在管理面板创建 |
-| `SECURE_COOKIES` | ➖ | **留空**，代码未使用此变量 |
-
-> 填完必填 4 项即可部署，其余留空不影响使用。部署后访问 `/admin` 登录管理面板，在页面中配置 Kimi Token 和 API Key。
-
----
-
-## 📦 手动部署（可选）
+将代码推送到 GitHub 即可自动部署到 Cloudflare Workers。
 
 ### 前置条件
 
-- Node.js >= 18
-- [Cloudflare 账户](https://dash.cloudflare.com/)
-- 安装 [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/)（`npm install -g wrangler` 或通过 `npx wrangler`）
+- GitHub 账号
+- [Cloudflare 账号](https://dash.cloudflare.com/)
 
-### 1. 代码托管到 GitHub
+### 1. 在 Cloudflare 准备资源
+
+在 [Cloudflare Dashboard](https://dash.cloudflare.com/) 创建：
+
+| 资源 | 用途 | 创建位置 |
+|------|------|----------|
+| **KV Namespace** | 存储账号、Key、配置 | Workers & Pages → KV → 创建 |
+| **D1 Database** | 存储请求日志 | Workers & Pages → D1 → 创建 |
+| **API Token** | 授权 GitHub Actions 部署 | [API Tokens](https://dash.cloudflare.com/profile/api-tokens) → 创建令牌 → Workers Edit 模板 |
+
+### 2. 配置 GitHub Secrets
+
+在 GitHub 仓库 → **Settings → Secrets and variables → Actions** 中添加：
+
+| Secret | 说明 | 获取方式 |
+|--------|------|----------|
+| `CLOUDFLARE_API_TOKEN` | Cloudflare API 令牌 | 上一步创建的 API Token |
+| `ADMIN_PASSWORD` | 管理面板密码 | 自己设一个强密码 |
+| `SESSION_SECRET` | session 签名密钥 | `openssl rand -base64 32` 运行生成 |
+
+### 3. 推送代码触发部署
 
 ```bash
-# 在 GitHub 新建仓库（建议设为 Private），然后：
 git remote add origin https://github.com/你的用户名/cf-kimi-api-ts.git
 git push -u origin main
 ```
 
-将代码托管到 GitHub 后，可利用 GitHub Actions 自动部署（见下文 CI/CD 章节）。
+推送后 GitHub Actions 自动执行部署。可在仓库 Actions 页面查看进度。
 
-### 2. 本地安装
+### 4. 绑定 KV 和 D1
 
-```bash
-git clone https://github.com/你的用户名/cf-kimi-api-ts.git
-cd cf-kimi-api-ts
-npm install
-```
+部署完成后，在 Cloudflare Dashboard → 你的 Worker → **设置 → 绑定** 添加：
 
-### 3. 创建 Cloudflare 资源
+| 变量名称 | 绑定类型 | 选择 |
+|----------|----------|------|
+| `KV` | KV Namespace | 你创建的 KV |
+| `DB` | D1 Database | 你创建的 D1 |
 
-在 [Cloudflare Dashboard](https://dash.cloudflare.com/) 创建：
+### 5. 首次使用
 
-1. **KV Namespace** — Workers & Pages → KV → 创建命名空间（如 `cf-kimi-api-kv`）
-2. **D1 Database** — Workers & Pages → D1 → 创建数据库（如 `cf-kimi-api-logs`）
-
-### 4. 配置 wrangler.toml
-
-编辑 `wrangler.toml`，填入上一步创建的资源 ID：
-
-```toml
-[[kv_namespaces]]
-binding = "KV"
-id = "你刚创建的_KV_ID"
-
-[[d1_databases]]
-binding = "DB"
-database_name = "cf-kimi-api-logs"
-database_id = "你刚创建的_D1_ID"
-```
-
-> 仓库里的 `wrangler.toml` 不包含 `id` / `database_id`，这是为了让一键部署工具弹出资源选择器。本地手动部署时需要手动补上。如需本地覆盖（不污染仓库），可创建 `wrangler.toml.local`，Wrangler 会自动合并。
-
-### 5. 设置环境变量
-
-```bash
-# 管理面板密码（必填）
-npx wrangler secret put ADMIN_PASSWORD
-
-# Cookie 签名密钥（推荐）
-npx wrangler secret put SESSION_SECRET
-# 运行 `openssl rand -base64 32` 生成一个随机值
-
-# 可选：预设 Kimi Token（也可部署后在管理面板添加）
-npx wrangler secret put KIMI_TOKEN
-```
-
-### 6. 本地预览
-
-```bash
-npm run dev
-```
-
-访问 `http://localhost:8787/admin` 进入管理面板。
-
-### 7. 部署到 Cloudflare
-
-```bash
-npm run deploy
-```
-
-部署成功后终端会输出 Worker 地址，如 `https://cf-kimi-api-ts.你的账号.workers.dev`。
-
-### 8. 首次使用
-
-部署完成后：
-
-1. 访问 `https://你的域名/admin`，用 `ADMIN_PASSWORD` 登录
-2. 在「账号」页面添加 Kimi Token
-3. 在「Keys」页面创建 API Key
-4. 测试调用：
-
-```bash
-curl https://你的域名/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer <你的_API_Key>" \
-  -d '{
-    "model": "kimi-k2.6",
-    "messages": [{"role": "user", "content": "你好"}]
-  }'
-```
-
-### 9.（可选）绑定自定义域名
-
-在 Cloudflare Dashboard → Workers & Pages → 你的 Worker → 触发器 → 自定义域名中添加。
+访问 `https://你的域名/admin`，用 `ADMIN_PASSWORD` 登录 → 添加 Kimi Token → 创建 API Key → 开始使用。
 
 ---
 
-## 🤖 CI/CD：GitHub Actions 自动部署
-
-仓库包含 `.github/workflows/deploy.yml`，推送 `main` 分支时自动部署。
-
-### 配置步骤
-
-1. 在 [Cloudflare Dashboard](https://dash.cloudflare.com/profile/api-tokens) 创建 API Token（权限：Workers → Edit）
-2. 在 GitHub 仓库 → Settings → Secrets and variables → Actions 中添加：
-   - `CLOUDFLARE_API_TOKEN`：上一步创建的 API Token
-3. 推送 `main` 分支即可触发自动部署
+## 💻 本地开发（可选）
 
 ```bash
-git push origin main
-```
+git clone https://github.com/Aleeyoo/cf-kimi-api-ts.git
+cd cf-kimi-api-ts
+npm install
 
-可在 GitHub 仓库 Actions 页面查看部署日志。
+# 编辑 wrangler.toml 填入 KV/D1 ID（参考 wrangler.toml.example）
+# 设置环境变量
+npx wrangler secret put ADMIN_PASSWORD
+npx wrangler secret put SESSION_SECRET
+
+# 本地预览
+npm run dev
+
+# 部署
+npm run deploy
+```
 
 ---
 
@@ -229,7 +155,7 @@ git push origin main
 | **KV 命名空间** | 存储账号、Key、Token 缓存等所有持久数据 | Workers & Pages → KV |
 | **D1 数据库** | 存储请求日志 | Workers & Pages → D1 → 创建数据库 |
 
-> 一键部署时会弹出下拉菜单让你选择或创建。本地手动部署需在 `wrangler.toml` 中填入 ID。
+> 部署后需在 Cloudflare Dashboard → 你的 Worker → 设置 → 绑定 中添加 KV 和 D1 的绑定。
 
 ### 环境变量
 
