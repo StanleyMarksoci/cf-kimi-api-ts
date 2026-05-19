@@ -6,8 +6,8 @@ dist/
 .wrangler/
 *.tsbuildinfo
 
-# Wrangler config (use wrangler.toml.example as template)
-wrangler.toml
+# Local overrides (not committed)
+wrangler.toml.local
 
 # Environment & secrets
 .env

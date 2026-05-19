@@ -87,11 +87,6 @@ npm install
 
 ### 4. 配置 wrangler.toml
 
-```bash
-# 从模板创建配置文件
-cp wrangler.toml.example wrangler.toml
-```
-
 编辑 `wrangler.toml`，填入上一步创建的资源 ID：
 
 ```toml
@@ -105,7 +100,7 @@ database_name = "cf-kimi-api-logs"
 database_id = "你刚创建的_D1_ID"
 ```
 
-> `wrangler.toml` 已加入 `.gitignore`，不会提交到仓库，请放心填写真实 ID。
+> `wrangler.toml` 已提交到仓库（占位 ID），直接编辑即可。如需本地覆盖（不污染仓库），可创建 `wrangler.toml.local`，Wrangler 会自动合并。
 
 ### 5. 设置环境变量
 
@@ -281,7 +276,7 @@ static/
 - 生产环境请设置强 `ADMIN_PASSWORD` 和稳定的 `SESSION_SECRET`
 - 公开部署时保持 `SECURE_COOKIES=true`
 - 不要把真实 Token、API Key 提交到仓库
-- `wrangler.toml` 已在 `.gitignore` 中，不会误提交真实 ID
+- 本地配置覆盖请用 `wrangler.toml.local`（已加入 `.gitignore`），不会误提交真实 ID
 
 ---
 
